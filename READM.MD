@@ -1,46 +1,66 @@
-# Impulse - Hackathon Unifenas
+Impulse - Hackathon Unifenas
 
 Plataforma web para conexão entre estudantes, empresas e egressos, permitindo a divulgação da trajetória acadêmica e profissional através de um feed de atividades.
 
-## Objetivo
+Objetivo
 
 O Impulse tem como objetivo permitir que estudantes registrem suas atividades acadêmicas, como projetos, pesquisas, estágios e eventos, tornando visível sua evolução e facilitando a conexão com o mercado de trabalho.
 
-## Funcionalidades
+Funcionalidades
 
-* Feed de atividades acadêmicas
-* Publicação de atividades (projetos, estágio, pesquisa, etc)
-* Perfil de estudante
-* Interação (curtir, comentar, salvar)
-* Filtro por tecnologia e tipo de atividade
+Feed de atividades acadêmicas
 
-## Tecnologias
+Publicação de atividades (projetos, estágio, pesquisa, eventos)
 
-### Frontend
+Perfil de estudante com informações pessoais, bio e links externos (ex: GitHub)
 
-* React
-* Vite
-* Sass
+Upload de imagens de atividades usando Cloudinary
 
-### Backend
+Interação com publicações (curtir, comentar, salvar)
 
-* .NET Web API
-* Entity Framework
+Filtro por tecnologia, tipo de atividade e nível
 
-### Banco de Dados
+Controle de acesso baseado em roles (User, Admin)
 
-* PostgreSQL
+Tecnologias
+Frontend
 
-### Armazenamento de Imagens
+React + Vite
 
-* Cloudinary
+Sass
 
-## Estrutura do Projeto
+Bibliotecas para formulários, autenticação e upload de imagens
 
-* `/backend` → API em .NET
-* `/frontend` → Aplicação React
-* `/docs` → Documentação e modelagem
+Backend
 
-## Status
+.NET 8 Web API
 
-Iniciando desenvolvimento (Hackathon UNIFENAS)
+Entity Framework Core
+
+JWT para autenticação
+
+Cloudinary para armazenamento de imagens
+
+Banco de Dados
+
+PostgreSQL
+
+Estrutura do Projeto
+
+/backend → API em .NET
+
+/frontend → Aplicação React
+
+/docs → Documentação, diagramas e modelagem
+
+-Lógica e Estrutura de Implementação
+
+Upload de Imagens → Toda imagem de atividade será enviada para o Cloudinary, e a URL será armazenada em Activity.ImageUrl.
+
+Relacionamento entre entidades → User e Activity possuem relacionamento 1:N (um usuário pode ter várias atividades).
+
+Controle de acesso → A role Admin poderá gerenciar todas as atividades; User só poderá gerenciar suas próprias.
+
+Filtros → Backend irá expor endpoints para filtrar por tecnologia, tipo de atividade e nível, retornando listas paginadas.
+
+Extensibilidade → As classes base estão definidas; novas propriedades ou entidades podem ser adicionadas conforme necessidade durante o desenvolvimento.
