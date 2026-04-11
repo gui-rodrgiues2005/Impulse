@@ -1,0 +1,10 @@
+# .NET
+bin/
+obj/
+
+# Node (se tiver front)
+node_modules/
+dist/
+
+# Outros
+.env
