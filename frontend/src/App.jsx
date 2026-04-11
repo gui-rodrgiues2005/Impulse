@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // ─────────────────────────────────────────────────────────────────────────────
 // IMPORTAÇÕES
 // useState é um "hook" do React que permite criar variáveis reativas:
@@ -360,3 +361,23 @@ const styles = {
     textDecoration: "none",
   },
 };
+=======
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Páginas
+import Login from "./Pages/Login/Login";
+import Register from "./Pages/Register/Register";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+>>>>>>> 02d3d1809057980f058c76d6c55eb8e48fd3d77c
