@@ -19,7 +19,7 @@ namespace backend.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
-                    Role = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
                     Bio = table.Column<string>(type: "text", nullable: false),
                     Github = table.Column<string>(type: "text", nullable: false),
                     Activities = table.Column<int[]>(type: "integer[]", nullable: false)
