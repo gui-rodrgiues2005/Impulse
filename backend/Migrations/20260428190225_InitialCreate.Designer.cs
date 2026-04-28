@@ -12,7 +12,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260418214422_InitialCreate")]
+    [Migration("20260428190225_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -46,13 +46,8 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Level")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Technologies")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -71,18 +66,43 @@ namespace backend.Migrations
                     b.ToTable("Activities");
                 });
 
+            modelBuilder.Entity("ActivityTag", b =>
+                {
+                    b.Property<Guid>("ActivityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ActivityId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("ActivityTags");
+                });
+
+            modelBuilder.Entity("Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
+                });
+
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int[]>("Activities")
-                        .IsRequired()
-                        .HasColumnType("integer[]");
-
                     b.Property<string>("Bio")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
@@ -90,7 +110,6 @@ namespace backend.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Github")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Name")
@@ -111,13 +130,45 @@ namespace backend.Migrations
 
             modelBuilder.Entity("Activity", b =>
                 {
-                    b.HasOne("User", "User")
-                        .WithMany()
+                    b.HasOne("User", null)
+                        .WithMany("Activities")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
 
-                    b.Navigation("User");
+            modelBuilder.Entity("ActivityTag", b =>
+                {
+                    b.HasOne("Activity", "Activity")
+                        .WithMany("ActivityTags")
+                        .HasForeignKey("ActivityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tag", "Tag")
+                        .WithMany("ActivityTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Activity");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Activity", b =>
+                {
+                    b.Navigation("ActivityTags");
+                });
+
+            modelBuilder.Entity("Tag", b =>
+                {
+                    b.Navigation("ActivityTags");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Navigation("Activities");
                 });
 #pragma warning restore 612, 618
         }

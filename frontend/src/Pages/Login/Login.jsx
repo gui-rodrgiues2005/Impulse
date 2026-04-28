@@ -5,7 +5,7 @@ import "./Login.scss";
 import API_URL from "../../service/api";
 
 export default function Login() {
-  const navegate = useNavigate();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     email: "",
@@ -43,7 +43,11 @@ export default function Login() {
         throw new Error(data.message || "Erro ao fazer login");
       }
 
-      window.location.href = "/feed";
+      // Salvar token (UserId) no localStorage
+      localStorage.setItem("token", data.userId);
+      
+      navigate('/feed')
+      
     } catch (error) {
       setError(error.message || "Erro ao fazer login");
     } finally {
