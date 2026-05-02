@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/IMPULSE-BRANCA.png";
 import "./Login.scss";
 import API_URL from "../../service/api";
+import { Eye } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -45,9 +46,9 @@ export default function Login() {
 
       // Salvar token (UserId) no localStorage
       localStorage.setItem("token", data.userId);
-      
+
       navigate('/feed')
-      
+
     } catch (error) {
       setError(error.message || "Erro ao fazer login");
     } finally {
@@ -79,6 +80,11 @@ export default function Login() {
         {/* Feedback visual */}
         {error && <div className="register__error">{error}</div>}
 
+        <div className="register__title">
+          <h1>Entre na sua conta</h1>
+          <p>Faça login para acessar sua jornada de carreira personalizada</p>
+        </div>
+
         {/* INPUT EMAIL */}
         <div className="register__field">
           <label>E-mail</label>
@@ -104,7 +110,7 @@ export default function Login() {
             disabled={loading}
           />
           <button type="button" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
-            👁
+            <Eye />
           </button>
         </div>
 
@@ -112,6 +118,22 @@ export default function Login() {
         <button className="register__submit" onClick={handleSubmit} disabled={loading}>
           {loading ? "Entrando..." : "Entrar →"}
         </button>
+
+        <div className="register__divider-text">
+          <span>ou</span>
+        </div>
+
+        <div className="register__oauth">
+          <button className="oauth google" onClick={() => handleOAuth("google")}>
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" />
+            Entrar com Google
+          </button>
+
+          <button className="oauth github" onClick={() => handleOAuth("github")}>
+            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" />
+            Entrar com GitHub
+          </button>
+        </div>
 
         {/* REGISTER */}
         <p className="register__login">

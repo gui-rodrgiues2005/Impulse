@@ -1,17 +1,28 @@
-
+* {
+  box-sizing: border-box;
+}
 
 body {
   font-family: var(--font-primary);
-  background: var(--primary-color);
-  color: var(--text-color);
+  background: var(--fundo);
+  color: var(--titulo);
+  margin: 0;
+  padding: 0;
 }
 
 a {
   text-decoration: none;
-  color: inherit;
+  color: var(--principal);
+  transition: 0.2s;
+}
+
+a:hover {
+  color: var(--azul-secundario);
 }
 
 button {
   cursor: pointer;
   border: none;
+  font-family: inherit;
 }
+

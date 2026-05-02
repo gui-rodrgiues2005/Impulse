@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/IMPULSE-BRANCA.png";
 import "./Register.scss";
 import API_URL from "../../service/api";
+import { Eye } from "lucide-react";
+
 
 export default function Register() {
   const navegate = useNavigate();
@@ -157,7 +159,7 @@ export default function Register() {
             disabled={loading}
           />
           <button type="button" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
-            👁
+             <Eye />
           </button>
         </div>
         <button className="register__submit" onClick={handleSubmit} disabled={loading}>

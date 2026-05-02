@@ -9,8 +9,11 @@ import {
   LogOut
 } from "lucide-react";
 
-import Logo from "../../assets/logonavbar.png";
+import Logo from "../../assets/logo.png";
 import "./Sidebar.scss";
+
+import UsuarioConta from "../UserComponent/UserComponent";
+
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -84,10 +87,9 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar__footer">
-        <div className="sidebar__logout" onClick={handleLogout}>
-          <LogOut size={18} />
-          Sair da conta
-        </div>
+          <div className="user__account">
+            <UsuarioConta/>
+          </div>
       </div>
     </aside>
   );

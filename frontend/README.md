@@ -1,16 +1,97 @@
-# React + Vite
+# Documentação do Projeto
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Uso de Enums no Back-end (C# .NET)
 
-Currently, two official plugins are available:
+Neste projeto, utilizamos enums para representar valores fixos e controlados, como nível de dificuldade e tipo de atividade.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Exemplo
 
-## React Compiler
+```csharp
+public enum Level
+{
+    Beginner = 1,
+    Intermediate = 2,
+    Advanced = 3
+}
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Esses enums são utilizados nas entidades, por exemplo:
 
-## Expanding the ESLint configuration
+```csharp
+public Level Level { get; set; }
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+### Vantagens do uso de Enum
+
+* Evita inconsistência de dados (ex: "iniciante", "Iniciante", "beginner")
+* Facilita validação
+* Melhora a legibilidade do código
+* Garante que apenas valores válidos sejam utilizados
+* Melhor performance no banco (armazenado como inteiro)
+
+---
+
+### Relação com o padrão MVC
+
+Dentro da arquitetura MVC, os enums fazem parte da camada Model, garantindo integridade e padronização dos dados que trafegam entre Controller e View (ou API).
+
+---
+
+## Uso de Sass no Front-end
+
+O projeto utiliza Sass (SCSS) como pré-processador de CSS para melhorar a organização e reutilização dos estilos.
+
+---
+
+### O que é Sass?
+
+Sass é uma extensão do CSS que permite:
+
+* Uso de variáveis
+* Reutilização de código
+* Melhor organização dos arquivos de estilo
+
+---
+
+### Exemplo com variáveis
+
+```scss
+$primary-color: #facc15;
+
+.button {
+  background: $primary-color;
+}
+
+.card {
+  background: $primary-color;
+}
+```
+
+---
+
+### Benefícios no projeto
+
+* Centralização de cores e estilos
+* Facilidade de manutenção
+* Redução de repetição de código
+* Melhor organização dos arquivos
+
+---
+
+### Estrutura recomendada
+
+```bash
+styles/
+  _variables.scss
+  _layout.scss
+  _components.scss
+```
+
+---
+
+## Conclusão
+
+* Enums foram utilizados para garantir consistência e segurança nos dados do back-end.
+* Sass foi adotado para tornar o front-end mais organizado, reutilizável e escalável.

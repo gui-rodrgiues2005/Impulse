@@ -6,13 +6,8 @@
   flex-direction: column;
   justify-content: space-between;
 
-  background: linear-gradient(
-    180deg,
-    #0b1120 0%,
-    #0f172a 100%
-  );
-
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: white;
+  border-right: 1px solid var(--contornos);
 
   // 🔝 TOPO
   &__top {
@@ -27,7 +22,7 @@
     align-items: center;
 
     img {
-      width: 120px;
+      width: 200px;
       object-fit: contain;
     }
   }
@@ -36,7 +31,7 @@
   &__menu {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   &__item {
@@ -45,38 +40,34 @@
     gap: 12px;
 
     padding: 0.75rem 1rem;
-    border-radius: 10px;
+    border-radius: 12px;
 
-    color: #94a3b8;
-    font-size: 14px;
+    color: var(--subtitle);
+    font-size: 15px;
     text-decoration: none;
 
     transition: all 0.2s ease;
     cursor: pointer;
 
     svg {
-      font-size: 18px;
+      stroke-width: 2;
     }
 
     &:hover {
-      background: rgba(124, 58, 237, 0.1);
-      color: #e2e8f0;
+      background: var(--azul-claro);
+      color: var(--principal);
     }
 
     &.active {
-      background: linear-gradient(
-        90deg,
-        rgba(124, 58, 237, 0.4),
-        rgba(124, 58, 237, 0.2)
-      );
-      color: #c084fc;
-      font-weight: 500;
+      background: var(--azul-claro);
+      color: var(--principal);
+      font-weight: 600;
     }
   }
 
   // 🔻 FOOTER
   &__footer {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--contornos);
     padding-top: 1rem;
   }
 
@@ -85,14 +76,14 @@
     align-items: center;
     gap: 10px;
 
-    color: #64748b;
+    color: var(--subtitle);
     font-size: 14px;
     cursor: pointer;
 
     transition: 0.2s;
 
     &:hover {
-      color: #cbd5f5;
+      color: var(--principal);
     }
   }
 }
