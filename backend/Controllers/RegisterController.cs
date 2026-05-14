@@ -1,13 +1,11 @@
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using backend.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+
 
 namespace backend.Controllers
 {
@@ -16,40 +14,66 @@ namespace backend.Controllers
     public class RegisterController : ControllerBase
     {
         private readonly AppDbContext _context;
-
-        public RegisterController(AppDbContext context)
+        private readonly IConfiguration _config;
+        public RegisterController(AppDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
-
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserDto user)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-            if (existingUser != null)
-            {
-                return Conflict("Email já registrado.");
-            }
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == user.Email);
 
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
+            if (existingUser != null)
+                return Conflict("Email já registrado.");
+
+            if (!Enum.IsDefined(typeof(UserRole), user.Role))
+                return BadRequest("Tipo de usuário inválido.");
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
             var newUser = new User
             {
                 Name = user.Name,
                 Email = user.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
+                PasswordHash = passwordHash,
                 Role = user.Role
             };
-
-            if (!Enum.IsDefined(typeof(UserRole), user.Role))
-            {
-                return BadRequest("Tipo de usuário inválido.");
-            }
 
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Register), new { id = newUser.Id }, newUser);
+            var jwtKey = _config["Jwt:Key"];
+            var key = Encoding.ASCII.GetBytes(jwtKey);
+
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, newUser.Id.ToString()),
+        new Claim(ClaimTypes.Name, newUser.Name),
+        new Claim(ClaimTypes.Role, newUser.Role.ToString())
+    };
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddHours(2),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"],
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return Ok(new
+            {
+                Token = tokenHandler.WriteToken(token)
+            });
         }
     }
 }

@@ -6,13 +6,17 @@ body {
   font-family: var(--font-primary);
   background: var(--fundo);
   color: var(--titulo);
+
   margin: 0;
   padding: 0;
+
+  overflow-x: hidden;
 }
 
 a {
   text-decoration: none;
   color: var(--principal);
+
   transition: 0.2s;
 }
 
@@ -23,6 +27,78 @@ a:hover {
 button {
   cursor: pointer;
   border: none;
+
   font-family: inherit;
 }
 
+img {
+  max-width: 100%;
+  display: block;
+}
+
+ul,
+ol {
+  list-style: none;
+
+  padding: 0;
+  margin: 0;
+}
+
+/* ========================================
+   DASHBOARD LAYOUT
+======================================== */
+
+.dashboard-layout {
+  display: flex;
+
+  width: 100%;
+  min-height: 100vh;
+
+  background: var(--fundo);
+}
+
+/* ========================================
+   CONTENT AREA
+======================================== */
+
+.dashboard-content {
+  flex: 1;
+
+  padding: 2rem;
+
+  background: var(--fundo);
+
+  overflow-y: auto;
+
+  min-height: 100vh;
+}
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* ========================================
+   TEXT SELECTION
+======================================== */
+
+::selection {
+  background: var(--principal);
+  color: white;
+}

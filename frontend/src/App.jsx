@@ -1,43 +1,70 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-// Páginas
-import Login from "./Pages/Login/Login";
-import Register from "./Pages/Register/Register";
-import Feed from "./Pages/Feed/Feed";
-import Buscar from "./Pages/Buscar/Buscar";
-import Mensagens from "./Pages/Mensagens/Mensagens";
-import Perfil from "./Pages/Perfil/Perfil";
+import StudentLayout from "./Layouts/StudentLayout/StudentLayout";
+import RecruiterLayout from "./Layouts/RecruiterLayout/RecruiterLayout";
+import CompanyLayout from "./Layouts/CompanyLayout/CompanyLayout";
 
-// Componentes
-import Layout from "./Components/Layout/Layout";
-import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
+import StudentProfile from "./Pages/student/StudentProfile/StudentProfile";
+import RecruiterProfile from "./Pages/recruiter/RecruiterProfile/RecruiterProfile";
+import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
 
-function App() {
+function AppRoutes() {
+
+  // TESTE TEMPORÁRIO
+  const userRole = "recruiter";
+  // student
+  // recruiter
+  // company
+
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Públicas */}
-        <Route path="/" element={<Login />} />
-        <Route path="/register" element={<Register />} />
 
-        {/* Privadas */}
+      <Routes>
+
+        {/* STUDENT */}
+        {userRole === "student" && (
+          <Route path="/student" element={<StudentLayout />}>
+            <Route
+              path="profile"
+              element={<StudentProfile />}
+            />
+          </Route>
+        )}
+
+        {/* RECRUITER */}
+        {userRole === "recruiter" && (
+          <Route path="/recruiter" element={<RecruiterLayout />}>
+            <Route
+              path="profile"
+              element={<RecruiterProfile />}
+            />
+          </Route>
+        )}
+
+        {/* COMPANY */}
+        {userRole === "company" && (
+          <Route path="/company" element={<CompanyLayout />}>
+            <Route
+              path="profile"
+              element={<CompanyProfile />}
+            />
+          </Route>
+        )}
+
         <Route
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/feed" element={<Feed />} />
-          <Route path="/publicar" element={<div>Publicar</div>} />
-          <Route path="/perfil" element={<div>Perfil</div>} />
-          <Route path="/buscar" element={<Buscar />} />
-          <Route path="/mensagens" element={<Mensagens />} />
-        </Route>
+          path="*"
+          element={<Navigate to={`/${userRole}/profile`} />}
+        />
 
       </Routes>
+
     </BrowserRouter>
   );
 }
 
-export default App;
+export default AppRoutes;
