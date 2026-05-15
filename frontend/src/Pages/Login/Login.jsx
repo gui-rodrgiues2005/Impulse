@@ -40,7 +40,7 @@ export default function App() {
           </p>
         </div>
 
-        <p style={styles.footerLeft}>© 2026 Impulse • Hackathon Unifenas</p>
+        <p style={styles.footerLeft}>© 2026 Impulse • HackaTown Unifenas</p>
       </div>
 
       {/* Linha azul separadora */}
