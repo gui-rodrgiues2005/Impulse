@@ -5,6 +5,9 @@ import {
   Navigate,
 } from "react-router-dom";
 
+import Register from "./Pages/Register/Register";
+import Login from "./Pages/Login/Login";
+
 import StudentLayout from "./Layouts/StudentLayout/StudentLayout";
 import RecruiterLayout from "./Layouts/RecruiterLayout/RecruiterLayout";
 import CompanyLayout from "./Layouts/CompanyLayout/CompanyLayout";
@@ -13,10 +16,16 @@ import StudentProfile from "./Pages/student/StudentProfile/StudentProfile";
 import RecruiterProfile from "./Pages/recruiter/RecruiterProfile/RecruiterProfile";
 import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
 
+
+
+import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
+
+
+
 function AppRoutes() {
 
   // TESTE TEMPORÁRIO
-  const userRole = "recruiter";
+  const userRole = "company";
   // student
   // recruiter
   // company
@@ -25,6 +34,8 @@ function AppRoutes() {
     <BrowserRouter>
 
       <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
 
         {/* STUDENT */}
         {userRole === "student" && (
@@ -50,9 +61,14 @@ function AppRoutes() {
         {userRole === "company" && (
           <Route path="/company" element={<CompanyLayout />}>
             <Route
+              path="dashboard"
+              element={<CompanyDashboard />}
+            />
+            <Route
               path="profile"
               element={<CompanyProfile />}
             />
+
           </Route>
         )}
 
