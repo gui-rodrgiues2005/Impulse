@@ -49,7 +49,7 @@ const RecruiterSidebar = () => {
 
           <NavLink
             to="/recruiter/discovery"
-            className="recruiter-sidebar__item active"
+            className="recruiter-sidebar__item"
           >
             <Compass size={20} />
             <span>Talent Discovery</span>

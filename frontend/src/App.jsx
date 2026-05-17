@@ -16,65 +16,170 @@ import StudentProfile from "./Pages/student/StudentProfile/StudentProfile";
 import RecruiterProfile from "./Pages/recruiter/RecruiterProfile/RecruiterProfile";
 import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
 
-
-
 import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
+import Vagas from "./Pages/company/Vagas/Vagas";
+import Candidatos from "./Pages/company/Candidatos/Candidatos";
+import Recrutadores from "./Pages/company/Recrutadores/Recrutadores";
+import Analytics from "./Pages/company/Analytics/Analytics";
+import MensagensCompany from "./Pages/company/MensagensCompany/MensagensCompany";
+import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
-
+import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
 
 function AppRoutes() {
 
-  // TESTE TEMPORÁRIO
-  const userRole = "company";
-  // student
-  // recruiter
-  // company
+  // USER LOGADO
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
+
+  const userRole = user?.role;
 
   return (
     <BrowserRouter>
 
       <Routes>
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
 
+        {/* LOGIN */}
+        <Route
+          path="/"
+          element={
+            user
+              ? (
+                userRole === "student"
+                  ? <Navigate to="/student/profile" />
+                  : userRole === "recruiter"
+                  ? <Navigate to="/recruiter/profile" />
+                  : <Navigate to="/company/dashboard" />
+              )
+              : <Login />
+          }
+        />
+
+        {/* REGISTER */}
+        <Route
+          path="/register"
+          element={
+            user
+              ? (
+                userRole === "student"
+                  ? <Navigate to="/student/profile" />
+                  : userRole === "recruiter"
+                  ? <Navigate to="/recruiter/profile" />
+                  : <Navigate to="/company/dashboard" />
+              )
+              : <Register />
+          }
+        />
+
+        {/* ========================= */}
         {/* STUDENT */}
-        {userRole === "student" && (
-          <Route path="/student" element={<StudentLayout />}>
-            <Route
-              path="profile"
-              element={<StudentProfile />}
-            />
-          </Route>
-        )}
+        {/* ========================= */}
 
+        <Route
+          path="/student"
+          element={
+            <ProtectedRoute>
+              <StudentLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="profile"
+            element={<StudentProfile />}
+          />
+        </Route>
+
+        {/* ========================= */}
         {/* RECRUITER */}
-        {userRole === "recruiter" && (
-          <Route path="/recruiter" element={<RecruiterLayout />}>
-            <Route
-              path="profile"
-              element={<RecruiterProfile />}
-            />
-          </Route>
-        )}
+        {/* ========================= */}
 
+        <Route
+          path="/recruiter"
+          element={
+            <ProtectedRoute>
+              <RecruiterLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route
+            path="profile"
+            element={<RecruiterProfile />}
+          />
+        </Route>
+
+        {/* ========================= */}
         {/* COMPANY */}
-        {userRole === "company" && (
-          <Route path="/company" element={<CompanyLayout />}>
-            <Route
-              path="dashboard"
-              element={<CompanyDashboard />}
-            />
-            <Route
-              path="profile"
-              element={<CompanyProfile />}
-            />
+        {/* ========================= */}
 
-          </Route>
-        )}
+        <Route
+          path="/company"
+          element={
+            <ProtectedRoute>
+              <CompanyLayout />
+            </ProtectedRoute>
+          }
+        >
+
+          <Route
+            path="dashboard"
+            element={<CompanyDashboard />}
+          />
+
+          <Route
+            path="vagas"
+            element={<Vagas />}
+          />
+
+          <Route
+            path="candidatos"
+            element={<Candidatos />}
+          />
+
+          <Route
+            path="recrutadores"
+            element={<Recrutadores />}
+          />
+
+          <Route
+            path="analytics"
+            element={<Analytics />}
+          />
+
+          <Route
+            path="profile"
+            element={<CompanyProfile />}
+          />
+
+          <Route
+            path="mensagens"
+            element={<MensagensCompany />}
+          />
+
+          <Route
+            path="config"
+            element={<ConfigCompany />}
+          />
+
+        </Route>
+
+        {/* ========================= */}
+        {/* FALLBACK */}
+        {/* ========================= */}
 
         <Route
           path="*"
-          element={<Navigate to={`/${userRole}/profile`} />}
+          element={
+            !user
+              ? <Navigate to="/" />
+              : (
+                userRole === "student"
+                  ? <Navigate to="/student/profile" />
+                  : userRole === "recruiter"
+                  ? <Navigate to="/recruiter/profile" />
+                  : <Navigate to="/company/dashboard" />
+              )
+          }
         />
 
       </Routes>

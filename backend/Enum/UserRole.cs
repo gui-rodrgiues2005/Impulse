@@ -1,5 +1,6 @@
 public enum UserRole
 {
-    Estudante,
-    Recrutador
+    Student,
+    Recruiter,
+    Company
 }

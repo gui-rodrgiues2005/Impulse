@@ -41,7 +41,7 @@ const StudentSidebar = () => {
 
           <NavLink
             to="/student/feed"
-            className="student-sidebar__item active"
+            className="student-sidebar__item"
           >
             <Home size={20} />
             <span>Feed</span>

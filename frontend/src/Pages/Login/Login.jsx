@@ -26,8 +26,9 @@ export default function Login() {
   const handleSubmit = async () => {
     setLoading(true);
     setError("");
+
     try {
-      const response = await fetch(`${API_URL}/Login`, {
+      const response = await fetch(`${API_URL}/Login/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,10 +45,33 @@ export default function Login() {
         throw new Error(data.message || "Erro ao fazer login");
       }
 
-      // Salvar token (UserId) no localStorage
-      localStorage.setItem("token", data.userId);
+      // TOKEN JWT
+      localStorage.setItem("token", data.token);
 
-      navigate('/feed')
+      // USER
+      localStorage.setItem(
+        "user",
+        JSON.stringify(data.user)
+      );
+
+      const role = data.user.role;
+
+      // NAVEGAÇÃO POR ROLE
+      if (role === "student") {
+        navigate("/student/profile");
+      }
+
+      else if (role === "recruiter") {
+        navigate("/recruiter/profile");
+      }
+
+      else if (role === "company") {
+        navigate("/company/dashboard");
+      }
+
+      else {
+        navigate("/");
+      }
 
     } catch (error) {
       setError(error.message || "Erro ao fazer login");
@@ -77,68 +101,95 @@ export default function Login() {
       <div className="register__divider" />
       {/* LADO DIREITO */}
       <div className="register__right">
-        {/* Feedback visual */}
-        {error && <div className="register__error">{error}</div>}
 
-        <div className="register__title">
-          <h1>Entre na sua conta</h1>
-          <p>Faça login para acessar sua jornada de carreira personalizada</p>
-        </div>
+        <div className="register__form-wrapper">
 
-        {/* INPUT EMAIL */}
-        <div className="register__field">
-          <label>E-mail</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="seuemail@gmail.com"
-            value={form.email}
-            onChange={handleChange}
+          {error && (
+            <div className="register__error">
+              {error}
+            </div>
+          )}
+
+          <div className="register__title">
+            <h1>Entre na sua conta</h1>
+
+            <p>
+              Faça login para acessar sua jornada
+              de carreira personalizada
+            </p>
+          </div>
+
+          <div className="register__field">
+            <label>E-mail</label>
+
+            <input
+              type="email"
+              name="email"
+              placeholder="seuemail@gmail.com"
+              value={form.email}
+              onChange={handleChange}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="register__field register__password">
+            <label>Senha</label>
+
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Digite sua senha"
+              value={form.password}
+              onChange={handleChange}
+              disabled={loading}
+            />
+
+            <button
+              type="button"
+              onClick={() =>
+                setShowPassword(!showPassword)
+              }
+              disabled={loading}
+            >
+              <Eye />
+            </button>
+          </div>
+
+          <button
+            className="register__submit"
+            onClick={handleSubmit}
             disabled={loading}
-          />
-        </div>
-
-        {/* INPUT SENHA */}
-        <div className="register__field register__password">
-          <label>Senha</label>
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            placeholder="Digite sua senha"
-            value={form.password}
-            onChange={handleChange}
-            disabled={loading}
-          />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} disabled={loading}>
-            <Eye />
-          </button>
-        </div>
-
-        {/* BOTÃO */}
-        <button className="register__submit" onClick={handleSubmit} disabled={loading}>
-          {loading ? "Entrando..." : "Entrar →"}
-        </button>
-
-        <div className="register__divider-text">
-          <span>ou</span>
-        </div>
-
-        <div className="register__oauth">
-          <button className="oauth google" onClick={() => handleOAuth("google")}>
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" />
-            Entrar com Google
+          >
+            {loading ? "Entrando..." : "Entrar"}
           </button>
 
-          <button className="oauth github" onClick={() => handleOAuth("github")}>
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" />
-            Entrar com GitHub
-          </button>
-        </div>
+          <div className="register__divider-text">
+            <span>ou continue com</span>
+          </div>
 
-        {/* REGISTER */}
-        <p className="register__login">
-          Não tem uma conta? <a href="/register">Criar conta</a>
-        </p>
+          <div className="register__oauth">
+
+            <button className="oauth google">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" />
+              Google
+            </button>
+
+            <button className="oauth github">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" />
+              GitHub
+            </button>
+
+          </div>
+
+          <p className="register__login">
+            Não tem uma conta?
+
+            <a href="/register">
+              Criar conta
+            </a>
+          </p>
+
+        </div>
       </div>
     </div>
   );

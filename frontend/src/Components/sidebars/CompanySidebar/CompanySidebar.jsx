@@ -46,7 +46,7 @@ const CompanySidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/company/jobs"
+            to="/company/vagas"
             className="company-sidebar__item"
           >
             <BriefcaseBusiness size={20} />
@@ -54,7 +54,7 @@ const CompanySidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/company/candidates"
+            to="/company/candidatos"
             className="company-sidebar__item"
           >
             <Users size={20} />
@@ -62,7 +62,7 @@ const CompanySidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/company/recruiters"
+            to="/company/recrutadores"
             className="company-sidebar__item"
           >
             <UserRoundSearch size={20} />
@@ -78,7 +78,7 @@ const CompanySidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/company/messages"
+            to="/company/mensagens"
             className="company-sidebar__item"
           >
             <MessageCircle size={20} />
@@ -87,14 +87,14 @@ const CompanySidebar = () => {
 
           <NavLink
             to="/company/profile"
-            className="company-sidebar__item active"
+            className="company-sidebar__item"
           >
             <Building2 size={20} />
             <span>Perfil da Empresa</span>
           </NavLink>
 
           <NavLink
-            to="/company/settings"
+            to="/company/config"
             className="company-sidebar__item"
           >
             <Settings size={20} />

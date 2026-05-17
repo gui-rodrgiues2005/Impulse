@@ -1,13 +1,8 @@
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using backend.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
-using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -22,34 +17,29 @@ namespace backend.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Register([FromBody] UserDto user)
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
-            if (existingUser != null)
+            var userId = User.FindFirstValue(
+                ClaimTypes.NameIdentifier
+            );
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            if (user == null)
             {
-                return Conflict("Email já registrado.");
+                return NotFound();
             }
 
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(user.Password);
-
-            var newUser = new User
+            return Ok(new
             {
-                Name = user.Name,
-                Email = user.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.Password),
-                Role = user.Role
-            };
-
-            if (!Enum.IsDefined(typeof(UserRole), user.Role))
-            {
-                return BadRequest("Tipo de usuário inválido.");
-            }
-
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(Register), new { id = newUser.Id }, newUser);
+                user.Id,
+                user.Name,
+                user.Email,
+                Role = user.Role.ToString().ToLower()
+            });
         }
     }
 }
