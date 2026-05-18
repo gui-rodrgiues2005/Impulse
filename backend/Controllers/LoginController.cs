@@ -30,11 +30,15 @@ namespace backend.Controllers
         )
         {
             var existingUser = await _context.Users
+
+                .Include(u => u.RecruiterProfile)
+                .Include(u => u.StudentProfile)
+
                 .FirstOrDefaultAsync(u => u.Email == user.Email);
 
             if (existingUser == null)
             {
-                return NotFound("Usuário não encontrado.");
+                return NotFound(new { message = "Usuário não encontrado." });
             }
 
             bool isPasswordValid =
@@ -45,11 +49,10 @@ namespace backend.Controllers
 
             if (!isPasswordValid)
             {
-                return Unauthorized("Senha incorreta.");
+                return Unauthorized(new { message = "Senha incorreta." });
             }
 
             var jwtKey = _config["Jwt:Key"];
-
             var key = Encoding.ASCII.GetBytes(jwtKey);
 
             var claims = new[]
@@ -73,24 +76,32 @@ namespace backend.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-
                 Expires = DateTime.UtcNow.AddHours(2),
-
                 Issuer = _config["Jwt:Issuer"],
-
                 Audience = _config["Jwt:Audience"],
-
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature
                 )
             };
 
-            var tokenHandler =
-                new JwtSecurityTokenHandler();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            var token =
-                tokenHandler.CreateToken(tokenDescriptor);
+            Guid? companyId = null;
+
+            // 🔥 BUSCA COMPANY CORRETA (novo modelo)
+            if (existingUser.Role == UserRole.Company)
+            {
+                companyId = await _context.Companies
+                    .Where(c => c.UserId == existingUser.Id)
+                    .Select(c => c.Id)
+                    .FirstOrDefaultAsync();
+            }
+            else if (existingUser.Role == UserRole.Recruiter)
+            {
+                companyId = existingUser.RecruiterProfile?.CompanyId;
+            }
 
             return Ok(new
             {
@@ -101,11 +112,12 @@ namespace backend.Controllers
                     id = existingUser.Id,
                     name = existingUser.Name,
                     email = existingUser.Email,
+                    role = existingUser.Role.ToString().ToLower(),
 
-                    role = existingUser
-                        .Role
-                        .ToString()
-                        .ToLower()
+                    companyId = companyId,
+
+                    hasStudentProfile =
+                        existingUser.StudentProfile != null
                 }
             });
         }

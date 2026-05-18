@@ -34,12 +34,12 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return Conflict("Email já registrado.");
+                return Conflict(new { message = "Email já registrado." });
             }
 
             if (!Enum.IsDefined(typeof(UserRole), user.Role))
             {
-                return BadRequest("Tipo de usuário inválido.");
+                return BadRequest(new { message = "Tipo de usuário inválido." });
             }
 
             string passwordHash =
@@ -82,7 +82,8 @@ namespace backend.Controllers
             {
                 var company = new Company
                 {
-                    Name = newUser.Name
+                    Name = newUser.Name,
+                    UserId = newUser.Id 
                 };
 
                 _context.Companies.Add(company);

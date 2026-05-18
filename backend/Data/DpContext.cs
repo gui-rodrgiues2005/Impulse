@@ -17,6 +17,7 @@ namespace backend.Data
 
         public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
 
+        public DbSet<RecruiterInvite> RecruiterInvites { get; set; }
         public DbSet<Company> Companies { get; set; }
 
         // ACTIVITIES
@@ -69,6 +70,11 @@ namespace backend.Data
             // =========================================
             // COMPANY -> RECRUITERS (1:N)
             // =========================================
+            modelBuilder.Entity<Company>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<RecruiterProfile>()
                 .HasOne(rp => rp.Company)

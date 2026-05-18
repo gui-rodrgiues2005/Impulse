@@ -30,11 +30,6 @@ export default function Register() {
       icon: "🎓",
     },
     {
-      label: "Recrutador",
-      value: "recruiter",
-      icon: "👔",
-    },
-    {
       label: "Empresa",
       value: "company",
       icon: "🏢",
@@ -71,7 +66,13 @@ export default function Register() {
         }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        const text = await response.text();
+        throw new Error(`Erro ao processar resposta do servidor: ${text}`);
+      }
 
       if (!response.ok) {
         console.log("Erro completo:", data);
@@ -171,9 +172,6 @@ export default function Register() {
           {role === "student" &&
             "Publique projetos e construa sua trajetória"}
 
-          {role === "recruiter" &&
-            "Encontre talentos e publique vagas"}
-
           {role === "company" &&
             "Gerencie recrutadores, vagas e talentos da empresa"}
 
@@ -251,8 +249,6 @@ export default function Register() {
             : `Criar conta como ${
                 role === "student"
                   ? "Estudante"
-                  : role === "recruiter"
-                  ? "Recrutador"
                   : "Empresa"
               } ›`}
 
