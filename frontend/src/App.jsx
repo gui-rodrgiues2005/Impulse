@@ -15,6 +15,7 @@ import CompanyLayout from "./Layouts/CompanyLayout/CompanyLayout";
 import StudentProfile from "./Pages/student/StudentProfile/StudentProfile";
 import RecruiterProfile from "./Pages/recruiter/RecruiterProfile/RecruiterProfile";
 import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
+import ActivityPublisher from "./Pages/student/Publicar/publicar";
 
 import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
 import Vagas from "./Pages/company/Vagas/Vagas";
@@ -26,18 +27,17 @@ import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
 import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
 
+import Reviews from "./Pages/recruiter/Reviews/Reviews";
+
 function AppRoutes() {
 
   // USER LOGADO
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
-
-  const userRole = user?.role;
+  const user = JSON.parse(localStorage.getItem("user"));
+ // const userRole = user?.role; 
+ const userRole = "recruiter"; // Default para "student" se role não estiver definido 
 
   return (
     <BrowserRouter>
-
       <Routes>
 
         {/* LOGIN */}
@@ -84,10 +84,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path="profile"
-            element={<StudentProfile />}
-          />
+          <Route path="profile" element={<StudentProfile />} />
+          <Route path="publicar" element={<ActivityPublisher />} />
         </Route>
 
         {/* ========================= */}
@@ -102,10 +100,8 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route
-            path="profile"
-            element={<RecruiterProfile />}
-          />
+          <Route path="profile" element={<RecruiterProfile />} />
+          <Route path="reviews" element={<Reviews />} />
         </Route>
 
         {/* ========================= */}
@@ -120,47 +116,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-
-          <Route
-            path="dashboard"
-            element={<CompanyDashboard />}
-          />
-
-          <Route
-            path="vagas"
-            element={<Vagas />}
-          />
-
-          <Route
-            path="candidatos"
-            element={<Candidatos />}
-          />
-
-          <Route
-            path="recrutadores"
-            element={<Recrutadores />}
-          />
-
-          <Route
-            path="analytics"
-            element={<Analytics />}
-          />
-
-          <Route
-            path="profile"
-            element={<CompanyProfile />}
-          />
-
-          <Route
-            path="mensagens"
-            element={<MensagensCompany />}
-          />
-
-          <Route
-            path="config"
-            element={<ConfigCompany />}
-          />
-
+          <Route path="dashboard" element={<CompanyDashboard />} />
+          <Route path="vagas" element={<Vagas />} />
+          <Route path="candidatos" element={<Candidatos />} />
+          <Route path="recrutadores" element={<Recrutadores />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="profile" element={<CompanyProfile />} />
+          <Route path="mensagens" element={<MensagensCompany />} />
+          <Route path="config" element={<ConfigCompany />} />
         </Route>
 
         {/* ========================= */}
@@ -183,7 +146,6 @@ function AppRoutes() {
         />
 
       </Routes>
-
     </BrowserRouter>
   );
 }

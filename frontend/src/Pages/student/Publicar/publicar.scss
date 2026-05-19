@@ -1,0 +1,444 @@
+// =============================
+// CORES PRINCIPAIS DO SISTEMA
+// =============================
+
+// Cor principal usada em botões e destaques
+$primary-color: #007bff;
+
+// Cor secundária usada em fundos claros
+$secondary-color: #f8f9fa;
+
+// Cor padrão dos textos
+$text-color: #333;
+
+// Cor de texto mais suave
+$text-light-color: #6c757d;
+
+// Cor padrão das bordas
+$border-color: #dee2e6;
+
+// Cor do fundo geral da página
+$bg-color-page: #f0f2f5;
+
+// Fundo da sidebar
+$bg-color-sidebar: #fff;
+
+// Fundo dos cards/formulários
+$bg-color-card: #fff;
+
+// Fundo quando uma habilidade é selecionada
+$selected-skill-bg: #e0f7fa;
+
+// Largura da sidebar
+$sidebar-width: 250px;
+
+
+// =============================
+// MIXINS
+// =============================
+
+// Centraliza elementos usando flex
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// Remove estilos padrões de botões
+@mixin button-reset {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+}
+
+
+// =============================
+// BODY DA PÁGINA
+// =============================
+
+body {
+
+    // Remove margem padrão
+    margin: 0;
+
+    // Fonte principal do sistema
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    // Cor padrão do texto
+    color: $text-color;
+
+    // Fundo geral da página
+    background-color: $bg-color-page;
+}
+
+
+// =============================
+// CONTAINER PRINCIPAL
+// =============================
+
+.activity-publisher-page {
+
+    // Usa flexbox
+    display: flex;
+
+    // Altura mínima da tela
+    min-height: 100vh;
+}
+
+
+// =============================
+// CONTEÚDO PRINCIPAL
+// =============================
+
+.content {
+
+    // Faz ocupar espaço restante
+    flex-grow: 1;
+
+    // Espaçamento interno
+    padding: 40px;
+
+    // Fundo da área
+    background-color: $bg-color-page;
+
+
+    // =========================
+    // TÍTULO
+    // =========================
+
+    .page-title {
+
+        // Tamanho do texto
+        font-size: 2em;
+
+        // Cor do título
+        color: $text-color;
+
+        // Espaço inferior
+        margin-bottom: 10px;
+    }
+
+
+    // =========================
+    // SUBTÍTULO
+    // =========================
+
+    .page-subtitle {
+
+        // Tamanho do texto
+        font-size: 1em;
+
+        // Cor mais suave
+        color: $text-light-color;
+
+        // Espaço inferior
+        margin-bottom: 30px;
+    }
+
+
+    // =========================
+    // FORMULÁRIO
+    // =========================
+
+    .publish-form {
+
+        // Fundo branco
+        background-color: $bg-color-card;
+
+        // Espaçamento interno
+        padding: 30px;
+
+        // Bordas arredondadas
+        border-radius: 10px;
+
+        // Sombra leve
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+
+        // Largura máxima
+        max-width: 800px;
+
+        // Centraliza na tela
+        margin: 0 auto;
+
+
+        // =====================
+        // ÁREA DE UPLOAD
+        // =====================
+
+        .upload-area {
+
+            // Borda pontilhada
+            border: 2px dashed $border-color;
+
+            // Borda arredondada
+            border-radius: 8px;
+
+            // Espaçamento interno
+            padding: 60px 20px;
+
+            // ALTURA AUMENTADA
+            min-height: 250px;
+
+            // Centralização
+            @include flex-center;
+
+            // Organização vertical
+            flex-direction: column;
+
+            // Centraliza texto
+            text-align: center;
+
+            // Espaço inferior
+            margin-bottom: 30px;
+
+            // Cursor de clique
+            cursor: pointer;
+
+            // Animação suave
+            transition: border-color 0.2s ease;
+
+
+            // Hover da área
+            &:hover {
+
+                // Muda cor da borda
+                border-color: $primary-color;
+            }
+
+
+            // Label clicável
+            .upload-label {
+
+                // Ocupa toda área
+                width: 100%;
+
+                // Centralização
+                @include flex-center;
+
+                // Organização vertical
+                flex-direction: column;
+
+                // Cursor pointer
+                cursor: pointer;
+            }
+
+
+            // Ícone de upload
+            .upload-icon-placeholder {
+
+                // Largura
+                width: 70px;
+
+                // Altura
+                height: 70px;
+
+                // Cor do ícone
+                background-color: $text-light-color;
+
+                // Espaço inferior
+                margin-bottom: 20px;
+
+                // Deixa mais suave
+                opacity: 0.7;
+
+                // Formato arredondado
+                border-radius: 50%;
+            }
+
+
+            // Texto geral
+            p {
+
+                margin: 0;
+
+                color: $text-light-color;
+            }
+
+
+            // Texto dos formatos permitidos
+            .allowed-formats {
+
+                // Exibe em nova linha
+                display: block;
+
+                // Tamanho menor
+                font-size: 0.85em;
+
+                // Cor suave
+                color: $text-light-color;
+
+                // Espaço superior
+                margin-top: 5px;
+            }
+
+
+            // Nome do arquivo selecionado
+            .selected-file-name {
+
+                // Texto em negrito
+                font-weight: bold;
+
+                // Cor principal
+                color: $primary-color;
+
+                // Espaço superior
+                margin-top: 10px;
+            }
+        }
+
+
+        // =====================
+        // GRUPOS DO FORMULÁRIO
+        // =====================
+
+        .form-group {
+
+            // Espaço inferior
+            margin-bottom: 25px;
+
+
+            // Labels
+            .label {
+
+                // Exibe em bloco
+                display: block;
+
+                // Negrito
+                font-weight: bold;
+
+                // Espaço inferior
+                margin-bottom: 8px;
+
+                // Cor do texto
+                color: $text-color;
+            }
+
+
+            // Inputs, selects e textarea
+            .text-input,
+            .select-input,
+            .textarea-input {
+
+                // Largura total
+                width: 100%;
+
+                // Espaçamento interno
+                padding: 12px 15px;
+
+                // Borda
+                border: 1px solid $border-color;
+
+                // Borda arredondada
+                border-radius: 6px;
+
+                // Tamanho da fonte
+                font-size: 1em;
+
+                // Cor do texto
+                color: $text-color;
+
+                // Fundo branco
+                background-color: #fff;
+
+                // Corrige tamanho
+                box-sizing: border-box;
+
+                // Transição suave
+                transition: border-color 0.2s ease;
+
+
+                // Quando selecionado
+                &:focus {
+
+                    // Cor da borda
+                    border-color: $primary-color;
+
+                    // Remove borda padrão
+                    outline: none;
+                }
+
+
+                // Placeholder
+                &::placeholder {
+
+                    color: $text-light-color;
+
+                    opacity: 0.7;
+                }
+            }
+
+
+            // Textarea
+            .textarea-input {
+
+                // Permite redimensionar verticalmente
+                resize: vertical;
+
+                // Altura mínima
+                min-height: 120px;
+            }
+        }
+
+
+        // =====================
+        // BOTÃO PUBLICAR
+        // =====================
+        .publish-button {
+
+            @include button-reset;
+
+            @include flex-center;
+
+            width: 100%;
+
+            padding: 15px 20px;
+
+            // Azul fosco/pálido
+            background-color: #4f6d8a;
+
+            color: #fff;
+
+            font-size: 1.1em;
+
+            font-weight: bold;
+
+            border-radius: 8px;
+
+            margin-top: 30px;
+
+            cursor: pointer;
+
+            transition: background-color 0.2s ease;
+
+            &:hover {
+
+                // Azul um pouco mais forte
+                background-color: #033f77;
+            }
+        }
+
+    }
+}
+
+
+// =============================
+// RESPONSIVIDADE
+// =============================
+
+@media (max-width: 768px) {
+
+    .content {
+
+        // Reduz padding em telas pequenas
+        padding: 20px;
+    }
+
+    .publish-form {
+
+        // Reduz padding do formulário
+        padding: 20px;
+    }
+}

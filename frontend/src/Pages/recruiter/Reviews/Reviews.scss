@@ -1,0 +1,205 @@
+// ==========================================
+// VARIÁVEIS
+// ==========================================
+
+$primary-color: #6366f1;
+$secondary-color: #ec4899;
+$green-color: #1D9E75;
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$background-light: #f9fafb;
+$background-white: #ffffff;
+$border-color: #e5e7eb;
+
+// ==========================================
+// REVIEWS
+// ==========================================
+
+.reviews {
+  position: relative;
+  min-height: 100vh;
+  background-color: $background-light;
+
+  // ========================================
+  // HEADER
+  // ========================================
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    background-color: $background-white;
+    border-bottom: 1px solid $border-color;
+  }
+
+  &__subtitle {
+    display: block;
+    font-size: 0.875rem;
+    color: $green-color;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin-bottom: 0.25rem;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+
+  // ========================================
+  // CONTEÚDO
+  // ========================================
+
+  &__content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: $text-secondary;
+    font-size: 0.875rem;
+  }
+
+  // ========================================
+  // CARD
+  // ========================================
+
+  &__card {
+    background-color: $background-white;
+    border: 1px solid $border-color;
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &__card-meta {
+    font-size: 0.8125rem;
+    color: $text-secondary;
+    margin: 0;
+  }
+
+  &__card-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__card-comment {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    margin: 0;
+  }
+
+  // ========================================
+  // RATING
+  // ========================================
+
+  &__rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $green-color;
+  }
+
+  // ========================================
+  // BOTÃO MENSAGEM
+  // ========================================
+
+  &__message-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    font-size: 0.8125rem;
+    color: $text-secondary;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
+
+  // ========================================
+  // TAG
+  // ========================================
+
+  &__tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    border: 1px solid $border-color;
+    border-radius: 6px;
+    padding: 3px 10px;
+    color: $text-secondary;
+  }
+}
+
+// ==========================================
+// RESPONSIVO
+// ==========================================
+
+@media (max-width: 768px) {
+  .reviews {
+    &__header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    &__card-header {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    &__card-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    &__content {
+      padding: 1rem;
+    }
+  }
+}

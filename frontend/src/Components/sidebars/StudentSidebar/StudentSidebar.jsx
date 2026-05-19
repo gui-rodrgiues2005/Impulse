@@ -48,7 +48,7 @@ const StudentSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/student/publish"
+            to="/student/publicar"
             className="student-sidebar__item"
           >
             <SquarePen size={20} />
