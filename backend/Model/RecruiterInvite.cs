@@ -1,3 +1,4 @@
+
 public class RecruiterInvite
 {
     public Guid Id { get; set; }

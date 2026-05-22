@@ -48,23 +48,15 @@ const RecruiterSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/recruiter/discovery"
+            to="/recruiter/buscar"
             className="recruiter-sidebar__item"
           >
             <Compass size={20} />
-            <span>Talent Discovery</span>
+            <span>Buscar Profissionais</span>
           </NavLink>
 
           <NavLink
-            to="/recruiter/search"
-            className="recruiter-sidebar__item"
-          >
-            <Search size={20} />
-            <span>Buscar</span>
-          </NavLink>
-
-          <NavLink
-            to="/recruiter/saved"
+            to="/recruiter/salvos"
             className="recruiter-sidebar__item"
           >
             <Bookmark size={20} />
@@ -72,7 +64,7 @@ const RecruiterSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/recruiter/messages"
+            to="/recruiter/mensagens"
             className="recruiter-sidebar__item"
           >
             <MessageCircle size={20} />
