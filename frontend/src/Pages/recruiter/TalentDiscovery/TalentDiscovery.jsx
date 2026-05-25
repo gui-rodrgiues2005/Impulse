@@ -1,7 +1,5 @@
 import "./TalentDiscovery.scss";
-
 import { useEffect, useState } from "react";
-
 import API_URL from "../../../service/api";
 
 import {

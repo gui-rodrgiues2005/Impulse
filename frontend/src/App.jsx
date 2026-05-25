@@ -28,6 +28,9 @@ import TelentDiscovery from "./Pages/recruiter/TalentDiscovery/TalentDiscovery";
 import Salvos from "./Pages/recruiter/Salvos/Salvos";
 import MensagensRecruiter from "./Pages/recruiter/MensagensRecruiter/MensagensRecruiter";
 
+import Publicacoes from "./Components/Publicacoes/Publicacoes";
+import Feed from "./Components/Feed/Feed";
+
 import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
 
 function AppRoutes() {
@@ -92,6 +95,17 @@ function AppRoutes() {
             path="profile"
             element={<StudentProfile />}
           />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
+          />
+
         </Route>
 
         {/* ========================= */}
@@ -110,10 +124,22 @@ function AppRoutes() {
             path="profile"
             element={<RecruiterProfile />}
           />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
+          />
+
           <Route
             path="buscar"
             element={<TelentDiscovery />}
           />
+
           <Route
             path="salvos"
             element={<Salvos />}
@@ -145,6 +171,16 @@ function AppRoutes() {
           <Route
             path="vagas"
             element={<Vagas />}
+          />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
           />
 
           <Route

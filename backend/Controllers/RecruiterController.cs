@@ -110,4 +110,40 @@ public class RecruiterController : ControllerBase
 
         return Ok(talents);
     }
+
+    [Authorize]
+    [HttpDelete("remove-saved-talent/{studentId}")]
+    public async Task<IActionResult> RemoveSavedTalent(Guid studentId)
+    {
+        var recruiterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (string.IsNullOrEmpty(recruiterId))
+        {
+            return Unauthorized(
+                "ID claim não encontrada no token."
+            );
+        }
+
+        var savedTalent = await _context.SavedTalents
+            .FirstOrDefaultAsync(x =>
+                x.RecruiterId == Guid.Parse(recruiterId) &&
+                x.StudentId == studentId
+            );
+
+        if (savedTalent == null)
+        {
+            return NotFound(
+                "Talento salvo não encontrado."
+            );
+        }
+
+        _context.SavedTalents.Remove(savedTalent);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            message = "Talento removido com sucesso."
+        });
+    }
 }

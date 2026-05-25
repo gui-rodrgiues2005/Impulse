@@ -47,6 +47,15 @@ const RecruiterSidebar = () => {
             <span>Feed</span>
           </NavLink>
 
+
+          <NavLink
+            to="/recruiter/publicar"
+            className="recruiter-sidebar__item"
+          >
+            <Home size={20} />
+            <span>Nova Publicação</span>
+          </NavLink>
+
           <NavLink
             to="/recruiter/buscar"
             className="recruiter-sidebar__item"

@@ -24,6 +24,8 @@ namespace backend.Data
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Talent> Talents { get; set; }
         public DbSet<SavedTalent> SavedTalents { get; set; }
+        public DbSet<FeedPost> FeedPosts { get; set; }
+        public DbSet<Skill> Skills { get; set; }
 
         // ACTIVITIES
         public DbSet<Activity> Activities { get; set; }
@@ -77,7 +79,7 @@ namespace backend.Data
                 .WithMany(u => u.Talents)
                 .HasForeignKey(t => t.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             modelBuilder.Entity<SavedTalent>()
                 .HasOne(x => x.Recruiter)
                 .WithMany()
@@ -89,11 +91,11 @@ namespace backend.Data
                 .WithMany()
                 .HasForeignKey(x => x.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
+
             // =========================================
             // COMPANY -> RECRUITERS (1:N)
             // =========================================
-            
+
             modelBuilder.Entity<Company>()
                 .HasOne(c => c.User)
                 .WithMany()
