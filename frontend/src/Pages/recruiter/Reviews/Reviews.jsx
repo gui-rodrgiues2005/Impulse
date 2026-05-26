@@ -35,35 +35,45 @@ const avaliacoes = [
 
 export default function Avaliacoes() {
   return (
-    <div className="avaliacoes-container">
-      <span className="avaliacoes-label">⭐ AVALIAÇÕES</span>
-      <h1 className="avaliacoes-titulo">Suas avaliações de candidatos</h1>
-      <p className="avaliacoes-subtitulo">
-        Histórico das avaliações que você registrou.
-      </p>
-
-      {avaliacoes.map((item) => (
-        <div key={item.id} className="card">
-          <div className="card-header">
-            <div>
-              <p className="card-nome">{item.nome}</p>
-              <p className="card-meta">
-                {item.cargo} · {item.categoria} · {item.tempo}
-              </p>
-            </div>
-            <div className="card-acoes">
-              <span className="card-nota">⭐ {item.nota}</span>
-              <button className="btn-mensagem">💬 Mensagem</button>
-            </div>
-          </div>
-
-          <p className="card-comentario">"{item.comentario}"</p>
-
-          <div>
-            <span className="card-tag">{item.tag}</span>
-          </div>
+    <div className="reviews">
+      <div className="reviews__header">
+        <div>
+          <span className="reviews__subtitle">⭐ AVALIAÇÕES</span>
+          <h1 className="reviews__title">Suas avaliações de candidatos</h1>
+          <p className="reviews__description">
+            Histórico das avaliações que você registrou.
+          </p>
         </div>
-      ))}
+      </div>
+
+      <div className="reviews__content">
+        {avaliacoes.length === 0 ? (
+          <p className="reviews__empty">Nenhuma avaliação encontrada.</p>
+        ) : (
+          avaliacoes.map((item) => (
+            <div key={item.id} className="reviews__card">
+              <div className="reviews__card-header">
+                <div className="reviews__card-info">
+                  <p className="reviews__card-name">{item.nome}</p>
+                  <p className="reviews__card-meta">
+                    {item.cargo} · {item.categoria} · {item.tempo}
+                  </p>
+                </div>
+                <div className="reviews__card-actions">
+                  <span className="reviews__rating">⭐ {item.nota}</span>
+                  <button className="reviews__message-btn">💬 Mensagem</button>
+                </div>
+              </div>
+
+              <p className="reviews__card-comment">"{item.comentario}"</p>
+
+              <div>
+                <span className="reviews__tag">{item.tag}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
