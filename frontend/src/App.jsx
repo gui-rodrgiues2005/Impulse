@@ -24,6 +24,13 @@ import Analytics from "./Pages/company/Analytics/Analytics";
 import MensagensCompany from "./Pages/company/MensagensCompany/MensagensCompany";
 import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
+import TelentDiscovery from "./Pages/recruiter/TalentDiscovery/TalentDiscovery";
+import Salvos from "./Pages/recruiter/Salvos/Salvos";
+import MensagensRecruiter from "./Pages/recruiter/MensagensRecruiter/MensagensRecruiter";
+
+import Publicacoes from "./Components/Publicacoes/Publicacoes";
+import Feed from "./Components/Feed/Feed";
+
 import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
 
 function AppRoutes() {
@@ -49,8 +56,8 @@ function AppRoutes() {
                 userRole === "student"
                   ? <Navigate to="/student/profile" />
                   : userRole === "recruiter"
-                  ? <Navigate to="/recruiter/profile" />
-                  : <Navigate to="/company/dashboard" />
+                    ? <Navigate to="/recruiter/profile" />
+                    : <Navigate to="/company/dashboard" />
               )
               : <Login />
           }
@@ -65,8 +72,8 @@ function AppRoutes() {
                 userRole === "student"
                   ? <Navigate to="/student/profile" />
                   : userRole === "recruiter"
-                  ? <Navigate to="/recruiter/profile" />
-                  : <Navigate to="/company/dashboard" />
+                    ? <Navigate to="/recruiter/profile" />
+                    : <Navigate to="/company/dashboard" />
               )
               : <Register />
           }
@@ -88,6 +95,17 @@ function AppRoutes() {
             path="profile"
             element={<StudentProfile />}
           />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
+          />
+
         </Route>
 
         {/* ========================= */}
@@ -105,6 +123,30 @@ function AppRoutes() {
           <Route
             path="profile"
             element={<RecruiterProfile />}
+          />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
+          />
+
+          <Route
+            path="buscar"
+            element={<TelentDiscovery />}
+          />
+
+          <Route
+            path="salvos"
+            element={<Salvos />}
+          />
+          <Route
+            path="mensagens"
+            element={<MensagensRecruiter />}
           />
         </Route>
 
@@ -129,6 +171,16 @@ function AppRoutes() {
           <Route
             path="vagas"
             element={<Vagas />}
+          />
+
+          <Route
+            path="publicar"
+            element={<Publicacoes />}
+          />
+
+          <Route
+            path="feed"
+            element={<Feed />}
           />
 
           <Route
@@ -176,8 +228,8 @@ function AppRoutes() {
                 userRole === "student"
                   ? <Navigate to="/student/profile" />
                   : userRole === "recruiter"
-                  ? <Navigate to="/recruiter/profile" />
-                  : <Navigate to="/company/dashboard" />
+                    ? <Navigate to="/recruiter/profile" />
+                    : <Navigate to="/company/dashboard" />
               )
           }
         />

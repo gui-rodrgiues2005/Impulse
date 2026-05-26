@@ -1,0 +1,291 @@
+.publicar-atividade {
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 32px;
+
+  background: #f5f7fa;
+}
+
+.atividade-header {
+  margin-bottom: 28px;
+}
+
+.atividade-header h1 {
+  font-size: 38px;
+  font-weight: 700;
+
+  color: #101828;
+
+  margin-bottom: 8px;
+}
+
+.atividade-header p {
+  font-size: 17px;
+
+  color: #667085;
+}
+
+.atividade-card {
+  width: 100%;
+  max-width: 900px;
+
+  background: #ffffff;
+
+  border-radius: 22px;
+
+  padding: 40px;
+
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.upload-box {
+  width: 100%;
+  height: 380px;
+
+  border: 2px dashed #d0d5dd;
+  border-radius: 20px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.upload-box:hover {
+  border-color: #2d5d9f;
+  background: #f8fbff;
+}
+
+.upload-content {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  color: #667085;
+}
+
+.upload-content h3 {
+  font-size: 24px;
+  font-weight: 500;
+
+  margin-top: 18px;
+  margin-bottom: 8px;
+}
+
+.upload-content span {
+  font-size: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group label {
+  font-size: 17px;
+  font-weight: 600;
+
+  color: #101828;
+}
+
+.helper-text {
+  font-size: 14px;
+
+  color: #667085;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+
+  border: 1px solid #d0d5dd;
+  border-radius: 14px;
+
+  padding: 16px 18px;
+
+  font-size: 16px;
+
+  background: #ffffff;
+
+  outline: none;
+
+  transition: 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #2d5d9f;
+  box-shadow: 0 0 0 4px rgba(45, 93, 159, 0.08);
+}
+
+textarea {
+  min-height: 160px;
+
+  resize: vertical;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper svg {
+  position: absolute;
+
+  right: 18px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #667085;
+
+  pointer-events: none;
+}
+
+select {
+  appearance: none;
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.skill {
+  border: 1px solid #d0d5dd;
+
+  background: #f9fafb;
+
+  color: #344054;
+
+  border-radius: 999px;
+
+  padding: 10px 16px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.skill:hover {
+  background: #eef4ff;
+  border-color: #2d5d9f;
+}
+
+.skill.active {
+  background: #2d5d9f;
+  color: #ffffff;
+  border-color: #2d5d9f;
+}
+
+.visibility-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.visibility-card {
+  border: 1px solid #d0d5dd;
+
+  border-radius: 16px;
+
+  padding: 18px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.visibility-card:hover {
+  border-color: #2d5d9f;
+  background: #f8fbff;
+}
+
+.visibility-card input {
+  width: 18px;
+  height: 18px;
+
+  margin-top: 2px;
+}
+
+.visibility-card h4 {
+  font-size: 16px;
+  font-weight: 600;
+
+  color: #101828;
+
+  margin-bottom: 4px;
+}
+
+.visibility-card p {
+  font-size: 14px;
+
+  color: #667085;
+}
+
+.publish-button {
+  width: 100%;
+
+  border: none;
+
+  background: #2d5d9f;
+
+  color: #ffffff;
+
+  padding: 18px;
+
+  border-radius: 16px;
+
+  font-size: 17px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+.publish-button:hover {
+  opacity: 0.92;
+}
+
+@media (max-width: 768px) {
+  .publicar-atividade {
+    padding: 18px;
+  }
+
+  .atividade-card {
+    padding: 24px;
+  }
+
+  .upload-box {
+    height: 260px;
+  }
+
+  .atividade-header h1 {
+    font-size: 28px;
+  }
+
+  .upload-content h3 {
+    font-size: 18px;
+  }
+}
