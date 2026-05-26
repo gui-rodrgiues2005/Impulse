@@ -1,15 +1,20 @@
-namespace backend.Dtos
+public class UpdateCompanyDto
 {
-    public class UpdateCompanyDto
-    {
-        public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
-        public string? Description { get; set; }
+    public string Description { get; set; } = string.Empty;
 
-        public string? Website { get; set; }
+    public string Website { get; set; } = string.Empty;
 
-        public string? Location { get; set; }
+    public string Location { get; set; } = string.Empty;
 
-        public string? LogoUrl { get; set; }
-    }
+    public string LogoUrl { get; set; } = string.Empty;
+
+    public string LegalName { get; set; } = string.Empty;
+
+    public string Cnpj { get; set; } = string.Empty;
+
+    public string Sector { get; set; } = string.Empty;
+
+    public string Areas { get; set; } = string.Empty;
 }

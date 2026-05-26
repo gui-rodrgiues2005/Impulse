@@ -26,6 +26,16 @@ export default function Recrutadores() {
   const [inviteError, setInviteError] = useState("");
   const [inviteSuccess, setInviteSuccess] = useState("");
 
+  const [openEditModal, setOpenEditModal] = useState(false);
+
+  const [selectedRecruiter, setSelectedRecruiter] = useState(null);
+
+  const [editForm, setEditForm] = useState({
+    email: "",
+    cargo: "",
+  });
+
+
   // =========================
   // LOAD RECRUITERS FROM API
   // =========================
@@ -123,6 +133,67 @@ export default function Recrutadores() {
 
     } catch (err) {
       setInviteError(err.message);
+    }
+  };
+
+  function handleOpenEditModal(recruiter) {
+
+    setSelectedRecruiter(recruiter);
+
+    setEditForm({
+      email: recruiter.email,
+      cargo: recruiter.cargo,
+    });
+
+    setOpenEditModal(true);
+  }
+
+  function handleEditChange(e) {
+
+    setEditForm({
+      ...editForm,
+      [e.target.name]: e.target.value,
+    });
+  }
+
+  const handleUpdateRecruiter = async () => {
+
+    try {
+
+      const userStr = localStorage.getItem("user");
+
+      if (!userStr) return;
+
+      const user = JSON.parse(userStr);
+
+      const response = await fetch(
+        `${API_URL}/Company/${user.companyId}/recruiters/${selectedRecruiter.id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            email: editForm.email,
+            position: editForm.cargo,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      setOpenEditModal(false);
+
+      loadRecruiters();
+
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -227,11 +298,12 @@ export default function Recrutadores() {
                     </span>
                   </td>
 
-                  <td>
-                    <button className="company-recruiters__menu">
-                      <Ellipsis size={18} />
-                    </button>
-                  </td>
+                  <button
+                    className="company-recruiters__menu"
+                    onClick={() => handleOpenEditModal(r)}
+                  >
+                    <Ellipsis size={18} />
+                  </button>
 
                 </tr>
               ))
@@ -308,6 +380,79 @@ export default function Recrutadores() {
           </div>
 
         </div>
+      )}
+
+      {openEditModal && (
+
+        <div className="recruiter-modal__overlay">
+
+          <div className="recruiter-modal">
+
+            <div className="recruiter-modal__header">
+
+              <div>
+                <h2>Editar recrutador</h2>
+                <p>Atualize as informações do recrutador.</p>
+              </div>
+
+              <button onClick={() => setOpenEditModal(false)}>
+                <X size={20} />
+              </button>
+
+            </div>
+
+            <div className="recruiter-modal__content">
+
+              <div className="recruiter-modal__field">
+
+                <label>E-mail</label>
+
+                <input
+                  type="email"
+                  name="email"
+                  value={editForm.email}
+                  onChange={handleEditChange}
+                />
+
+              </div>
+
+              <div className="recruiter-modal__field">
+
+                <label>Cargo</label>
+
+                <input
+                  type="text"
+                  name="cargo"
+                  value={editForm.cargo}
+                  onChange={handleEditChange}
+                />
+
+              </div>
+
+            </div>
+
+            <div className="recruiter-modal__footer">
+
+              <button
+                className="secondary"
+                onClick={() => setOpenEditModal(false)}
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="primary"
+                onClick={handleUpdateRecruiter}
+              >
+                Salvar alterações
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
       )}
 
     </div>

@@ -1,6 +1,8 @@
 import "./Dashboard.scss";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import API_URL from "../../../service/api";
 
 import {
   AreaChart,
@@ -19,13 +21,13 @@ import {
 } from "recharts";
 
 const monthlyData = [
-  { mes: "Set", candidatos: 130, contratacoes: 5 },
-  { mes: "Out", candidatos: 180, contratacoes: 7 },
-  { mes: "Nov", candidatos: 220, contratacoes: 10 },
-  { mes: "Dez", candidatos: 185, contratacoes: 8 },
-  { mes: "Jan", candidatos: 210, contratacoes: 9 },
-  { mes: "Fev", candidatos: 270, contratacoes: 12 },
-  { mes: "Mar", candidatos: 360, contratacoes: 15 },
+  { mes: "Set", candidatos: 130 },
+  { mes: "Out", candidatos: 180 },
+  { mes: "Nov", candidatos: 220 },
+  { mes: "Dez", candidatos: 185 },
+  { mes: "Jan", candidatos: 210 },
+  { mes: "Fev", candidatos: 270 },
+  { mes: "Mar", candidatos: 360 },
 ];
 
 const funnelData = [
@@ -43,23 +45,6 @@ const origemData = [
   { name: "Outros", value: 7, color: "#8f8f8f" },
 ];
 
-const vagas = [
-  {
-    titulo: "Analista de Marketing Jr.",
-    area: "Marketing",
-    candidatos: 86,
-    status: "Aberta",
-    abertoHa: "4d",
-  },
-  {
-    titulo: "Estagiário em Engenharia Civil",
-    area: "Engenharia",
-    candidatos: 142,
-    status: "Aberta",
-    abertoHa: "9d",
-  },
-];
-
 const indicadores = [
   {
     label: "Taxa de contratação",
@@ -75,20 +60,14 @@ const indicadores = [
   },
 ];
 
-const statusStyle = {
-  Aberta: {
-    background: "#eaf6f1",
-    color: "#1a7a56",
-    border: "1px solid #b3dece",
-  },
-};
-
 function badgeCss(positive) {
-  if (positive === true)
+
+  if (positive) {
     return {
       background: "#eaf6f1",
       color: "#1a7a56",
     };
+  }
 
   return {
     background: "#f4f4f2",
@@ -97,13 +76,20 @@ function badgeCss(positive) {
 }
 
 function ChartTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null;
+
+  if (!active || !payload?.length) {
+    return null;
+  }
 
   return (
     <div className="chart-tooltip">
-      <p className="chart-tooltip__label">{label}</p>
+
+      <p className="chart-tooltip__label">
+        {label}
+      </p>
 
       {payload.map((p, i) => (
+
         <p
           key={i}
           className="chart-tooltip__item"
@@ -111,12 +97,21 @@ function ChartTooltip({ active, payload, label }) {
         >
           {p.name}: <strong>{p.value}</strong>
         </p>
+
       ))}
+
     </div>
   );
 }
 
-function KpiCard({ icon, value, label, trend, trendSub }) {
+function KpiCard({
+  icon,
+  value,
+  label,
+  trend,
+  trendSub,
+}) {
+
   return (
     <div className="kpi-card">
 
@@ -136,11 +131,9 @@ function KpiCard({ icon, value, label, trend, trendSub }) {
         {label}
       </div>
 
-      {trend && (
-        <div className="kpi-card__trend">
-          {trend} {trendSub}
-        </div>
-      )}
+      <div className="kpi-card__trend">
+        {trend} {trendSub}
+      </div>
 
     </div>
   );
@@ -148,7 +141,48 @@ function KpiCard({ icon, value, label, trend, trendSub }) {
 
 export default function Dashboard() {
 
+  const [jobs, setJobs] = useState([]);
   const [hov, setHov] = useState(null);
+
+  async function loadJobs() {
+
+    try {
+
+      const userStr = localStorage.getItem("user");
+
+      if (!userStr) return;
+
+      const user = JSON.parse(userStr);
+
+      const response = await fetch(
+        `${API_URL}/Company/${user.companyId}/jobs`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      setJobs(data);
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  const vagasAbertas =
+    jobs.filter((j) => j.status === "Aberta").length;
+
+  const totalCandidatos =
+    jobs.reduce(
+      (acc, curr) => acc + (curr.candidates || 0),
+      0
+    );
 
   return (
     <div className="company-dashboard">
@@ -162,20 +196,8 @@ export default function Dashboard() {
           </p>
 
           <h1 className="company-dashboard__title">
-            Empresa ABC · Visão geral
+            Dashboard da empresa
           </h1>
-
-        </div>
-
-        <div className="company-dashboard__actions">
-
-          <button className="secondary-btn">
-            Exportar
-          </button>
-
-          <button className="primary-btn">
-            Nova vaga
-          </button>
 
         </div>
 
@@ -185,7 +207,7 @@ export default function Dashboard() {
 
         <KpiCard
           icon="💼"
-          value="24"
+          value={vagasAbertas}
           label="Vagas ativas"
           trend="+3"
           trendSub="esta semana"
@@ -193,8 +215,8 @@ export default function Dashboard() {
 
         <KpiCard
           icon="👥"
-          value="1.482"
-          label="Candidatos totais"
+          value={totalCandidatos}
+          label="Candidatos"
           trend="+128"
           trendSub="este mês"
         />
@@ -212,7 +234,7 @@ export default function Dashboard() {
               <h3>Crescimento mensal</h3>
 
               <p>
-                Candidatos x contratações
+                Fluxo de candidatos
               </p>
 
             </div>
@@ -223,6 +245,7 @@ export default function Dashboard() {
             width="100%"
             height={240}
           >
+
             <AreaChart data={monthlyData}>
 
               <defs>
@@ -234,6 +257,7 @@ export default function Dashboard() {
                   x2="0"
                   y2="1"
                 >
+
                   <stop
                     offset="5%"
                     stopColor="#1e3a5f"
@@ -277,6 +301,7 @@ export default function Dashboard() {
               />
 
             </AreaChart>
+
           </ResponsiveContainer>
 
         </div>
@@ -289,6 +314,7 @@ export default function Dashboard() {
             width="100%"
             height={240}
           >
+
             <PieChart>
 
               <Pie
@@ -301,6 +327,7 @@ export default function Dashboard() {
               >
 
                 {origemData.map((e, i) => (
+
                   <Cell
                     key={i}
                     fill={e.color}
@@ -310,6 +337,7 @@ export default function Dashboard() {
                         : 0.4
                     }
                   />
+
                 ))}
 
               </Pie>
@@ -317,6 +345,7 @@ export default function Dashboard() {
               <Legend />
 
             </PieChart>
+
           </ResponsiveContainer>
 
         </div>
@@ -333,6 +362,7 @@ export default function Dashboard() {
             width="100%"
             height={240}
           >
+
             <BarChart
               data={funnelData}
               layout="vertical"
@@ -365,6 +395,7 @@ export default function Dashboard() {
               />
 
             </BarChart>
+
           </ResponsiveContainer>
 
         </div>
@@ -390,9 +421,7 @@ export default function Dashboard() {
 
                 </div>
 
-                <span
-                  style={badgeCss(ind.positive)}
-                >
+                <span style={badgeCss(ind.positive)}>
                   {ind.badge}
                 </span>
 
@@ -415,7 +444,7 @@ export default function Dashboard() {
             <h3>Vagas recentes</h3>
 
             <p>
-              Pipeline de candidatos
+              Pipeline da empresa
             </p>
 
           </div>
@@ -439,34 +468,27 @@ export default function Dashboard() {
 
           <tbody>
 
-            {vagas.map((v, i) => {
+            {jobs.map((job) => (
 
-              const s =
-                statusStyle[v.status];
+              <tr key={job.id}>
 
-              return (
+                <td>{job.title}</td>
 
-                <tr key={i}>
+                <td>{job.area}</td>
 
-                  <td>{v.titulo}</td>
+                <td>{job.candidates}</td>
 
-                  <td>{v.area}</td>
+                <td>
 
-                  <td>{v.candidatos}</td>
+                  <span className="status-badge">
+                    {job.status}
+                  </span>
 
-                  <td>
-                    <span
-                      className="status-badge"
-                      style={s}
-                    >
-                      {v.status}
-                    </span>
-                  </td>
+                </td>
 
-                </tr>
+              </tr>
 
-              );
-            })}
+            ))}
 
           </tbody>
 

@@ -16,7 +16,7 @@ import { NavLink } from "react-router-dom";
 const CompanySidebar = () => {
   return (
     <aside className="company-sidebar">
-      
+
       <div className="company-sidebar__top">
 
         <div className="company-sidebar__logo">
@@ -36,6 +36,23 @@ const CompanySidebar = () => {
         </div>
 
         <nav className="company-sidebar__nav">
+
+          <NavLink
+            to="/company/feed"
+            className="company-sidebar__item"
+          >
+            <LayoutDashboard size={20} />
+            <span>Feed</span>
+          </NavLink>
+
+          <NavLink
+            to="/company/publicar"
+            className="company-sidebar__item"
+          >
+            <LayoutDashboard size={20} />
+            <span>Nova Publicação</span>
+          </NavLink>
+
 
           <NavLink
             to="/company/dashboard"
