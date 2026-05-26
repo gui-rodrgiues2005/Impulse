@@ -4,11 +4,14 @@
 
 $primary-color: #6366f1;
 $secondary-color: #ec4899;
-$green-color: #1D9E75;
-$text-primary: #1f2937;
+$green-color: #1d9e75;
+
+$text-primary: #111827;
 $text-secondary: #6b7280;
-$background-light: #f9fafb;
+
+$background-light: #f4f7fb;
 $background-white: #ffffff;
+
 $border-color: #e5e7eb;
 
 // ==========================================
@@ -16,9 +19,14 @@ $border-color: #e5e7eb;
 // ==========================================
 
 .reviews {
-  position: relative;
   min-height: 100vh;
   background-color: $background-light;
+  padding: 2rem;
+
+  &__container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
 
   // ========================================
   // HEADER
@@ -28,49 +36,61 @@ $border-color: #e5e7eb;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem;
-    background-color: $background-white;
-    border-bottom: 1px solid $border-color;
+
+    margin-bottom: 2rem;
   }
 
   &__subtitle {
-    display: block;
-    font-size: 0.875rem;
-    color: $green-color;
-    font-weight: 500;
+    display: inline-block;
+
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.5rem;
+
+    color: $green-color;
+
+    margin-bottom: 0.7rem;
   }
 
   &__title {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 2.5rem;
+    font-weight: 800;
+
+    line-height: 1.1;
+    letter-spacing: -1px;
+
     color: $text-primary;
-    margin-bottom: 0.25rem;
+
+    margin-bottom: 0.5rem;
   }
 
   &__description {
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     color: $text-secondary;
   }
 
   // ========================================
-  // CONTEÚDO
+  // CONTENT
   // ========================================
 
   &__content {
-    padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 1rem;
   }
 
   &__empty {
-    padding: 2rem 1rem;
+    background-color: white;
+
+    border-radius: 18px;
+
+    padding: 2rem;
+
     text-align: center;
+
     color: $text-secondary;
-    font-size: 0.875rem;
   }
 
   // ========================================
@@ -79,87 +99,149 @@ $border-color: #e5e7eb;
 
   &__card {
     background-color: $background-white;
-    border: 1px solid $border-color;
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(229, 231, 235, 0.7);
+
+    padding: 1.5rem;
+
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    transition: box-shadow 0.2s ease;
+
+    gap: 1rem;
+
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:hover {
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      transform: translateY(-2px);
+
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.04);
     }
   }
 
   &__card-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
   }
 
   &__card-info {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    gap: 14px;
   }
+
+  // ========================================
+  // AVATAR
+  // ========================================
+
+  &__avatar {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+      135deg,
+      $primary-color,
+      $secondary-color
+    );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+
+    font-size: 1rem;
+    font-weight: 700;
+
+    flex-shrink: 0;
+  }
+
+  // ========================================
+  // TEXTOS
+  // ========================================
 
   &__card-name {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 700;
+
     color: $text-primary;
+
     margin: 0;
   }
 
   &__card-meta {
-    font-size: 0.8125rem;
+    font-size: 0.85rem;
     color: $text-secondary;
+
+    margin-top: 2px;
+  }
+
+  &__card-comment {
+    font-size: 0.96rem;
+
+    line-height: 1.7;
+
+    color: #4b5563;
+
+    font-style: italic;
+
     margin: 0;
   }
+
+  // ========================================
+  // ACTIONS
+  // ========================================
 
   &__card-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
-
-  &__card-comment {
-    font-size: 0.875rem;
-    color: $text-secondary;
-    margin: 0;
-  }
-
-  // ========================================
-  // RATING
-  // ========================================
 
   &__rating {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.9375rem;
-    font-weight: 600;
     color: $green-color;
+
+    font-size: 0.95rem;
+    font-weight: 700;
   }
 
   // ========================================
-  // BOTÃO MENSAGEM
+  // BUTTON
   // ========================================
 
   &__message-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    background: none;
+    gap: 6px;
+
     border: none;
-    font-size: 0.8125rem;
-    color: $text-secondary;
+
+    background-color: #f3f4f6;
+
+    color: $text-primary;
+
+    padding: 9px 14px;
+
+    border-radius: 10px;
+
+    font-size: 0.82rem;
+    font-weight: 600;
+
     cursor: pointer;
-    padding: 0;
-    transition: color 0.2s ease;
+
+    transition: all 0.2s ease;
 
     &:hover {
-      color: $text-primary;
+      background-color: #e5e7eb;
+      transform: scale(1.03);
     }
   }
 
@@ -167,13 +249,22 @@ $border-color: #e5e7eb;
   // TAG
   // ========================================
 
+  &__footer {
+    display: flex;
+    justify-content: flex-start;
+  }
+
   &__tag {
-    display: inline-block;
+    background-color: rgba(99, 102, 241, 0.08);
+
+    color: $primary-color;
+
+    border-radius: 999px;
+
+    padding: 6px 12px;
+
     font-size: 0.75rem;
-    border: 1px solid $border-color;
-    border-radius: 6px;
-    padding: 3px 10px;
-    color: $text-secondary;
+    font-weight: 700;
   }
 }
 
@@ -183,23 +274,21 @@ $border-color: #e5e7eb;
 
 @media (max-width: 768px) {
   .reviews {
-    &__header {
-      flex-direction: column;
-      gap: 1rem;
+    padding: 1rem;
+
+    &__title {
+      font-size: 2rem;
     }
 
     &__card-header {
       flex-direction: column;
-      gap: 8px;
+      align-items: flex-start;
+      gap: 1rem;
     }
 
     &__card-actions {
       width: 100%;
       justify-content: space-between;
-    }
-
-    &__content {
-      padding: 1rem;
     }
   }
 }
