@@ -36,6 +36,13 @@ export default function Vagas() {
 
   const [selectedJob, setSelectedJob] = useState(null);
 
+  const [formData, setFormData] = useState({
+    title: "",
+    area: "",
+    type: "",
+    location: "",
+  });
+
   const [editFormData, setEditFormData] = useState({
     title: "",
     area: "",

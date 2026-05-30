@@ -10,13 +10,13 @@ public class User
 
     public string PasswordHash { get; set; } = string.Empty;
 
-    public string Course { get; set; }
+    public string? Course { get; set; }
 
-    public string Level { get; set; }
+    public string? Level { get; set; }
 
-    public string Bio { get; set; }
+    public string? Bio { get; set; }
 
-    public string AvatarUrl { get; set; }
+    public string? AvatarUrl { get; set; }
 
     public UserRole Role { get; set; }
 
@@ -25,7 +25,6 @@ public class User
     // RELAÇÕES
     public StudentProfile? StudentProfile { get; set; }
 
-    public RecruiterProfile? RecruiterProfile { get; set; }
     public List<Talent> Talents { get; set; } = [];
     public List<Skill> Skills { get; set; } = [];
     public List<SavedTalent> SavedTalents { get; set; } = [];

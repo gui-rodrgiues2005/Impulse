@@ -1,10 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 import {
-  Bell,
-  Building2,
-  Check,
+  MapPin,
+  CalendarDays,
+  Pencil,
+  GraduationCap,
+  FileText,
+  Plus,
+  ExternalLink,
+  BriefcaseBusiness,
+  BadgeCheck,
+  FlaskConical,
+  User,
   X,
+  Save,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -14,40 +23,52 @@ import API_URL from "../../../service/api";
 import "./StudentProfile.scss";
 
 export default function StudentProfile() {
-
   const navigate = useNavigate();
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
-  const [openNotifications, setOpenNotifications] =
-    useState(false);
+  const [userPosts, setUserPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [studentProfile, setStudentProfile] = useState({
+    bio: "",
+    skills: [],
+    profileImage: "",
+    course: "",
+    linkedin: "",
+    github: "",
+    university: "",
+    location: "",
+  });
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [recruiterInvites, setRecruiterInvites] =
-    useState([]);
-
-  const [isTransitioning, setIsTransitioning] =
-    useState(false);
-
-  const [transitionUser, setTransitionUser] =
-    useState("");
-
-  // =========================
-  // BUSCAR CONVITES
-  // =========================
-
+  const [editForm, setEditForm] =
+    useState({
+      bio: "",
+      course: "",
+      profileImage: "",
+      linkedin: "",
+      github: "",
+      university: "",
+      location: "",
+      skills: [],
+    });
   useEffect(() => {
-    fetchInvites();
+    profileUser();
+    loadUserPosts();
   }, []);
 
-  const fetchInvites = async () => {
-    try {
 
-      const token =
-        localStorage.getItem("token");
+  const profileUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const user = JSON.parse(
+        localStorage.getItem("user")
+      );
 
       const response = await fetch(
-        `${API_URL}/User/invites`,
+        `${API_URL}/Student/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,304 +76,820 @@ export default function StudentProfile() {
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
         throw new Error(
-          data.message ||
-          "Erro ao buscar convites"
+          "Erro ao carregar perfil"
         );
       }
 
-      setRecruiterInvites(data);
+      const data = await response.json();
+
+      setStudentProfile(data);
 
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Erro ao carregar perfil:",
+        error
+      );
+    }
+  };
+
+  const loadUserPosts = async () => {
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_URL}/publicacoes/my-posts`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+
+        const data =
+          await response.json();
+
+        setUserPosts(data);
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Erro ao carregar publicações:",
+        error
+      );
+
     } finally {
-      setLoading(false);
+      setLoadingPosts(false);
     }
   };
 
-  // =========================
-  // ACEITAR CONVITE
-  // =========================
+  const handleOpenEdit = () => {
+    setEditForm({
+      bio: studentProfile.bio || "",
+      course: studentProfile.course || "",
+      profileImage: studentProfile.profileImage || "",
+      linkedin: studentProfile.linkedin || "",
+      github: studentProfile.github || "",
+      university: studentProfile.university || "",
+      location: studentProfile.location || "",
+      skills: studentProfile.skills || [],
+    });
 
-  const handleAcceptInvite = async (
-    inviteId
-  ) => {
+    setShowEditModal(true);
+  };
+
+  const handleSaveProfile = async () => {
     try {
-
       const token =
         localStorage.getItem("token");
 
       const response = await fetch(
-        `${API_URL}/User/accept-invite/${inviteId}`,
+        `${API_URL}/Student/profile`,
         {
-          method: "POST",
+          method: "PUT",
 
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`,
           },
+
+          body: JSON.stringify({
+            ...editForm,
+          }),
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(
-          data.message ||
-          "Erro ao aceitar convite"
-        );
+        const errorData = await response.text();
+
+        console.log(errorData);
+
+        throw new Error(errorData);
       }
 
-      // USER LOCAL
-      const currentUser =
-        JSON.parse(
-          localStorage.getItem("user")
-        );
+      await profileUser();
 
-      // MOSTRA TELA DE TRANSIÇÃO
-      setTransitionUser(currentUser.name);
-      setIsTransitioning(true);
-
-      // ALTERA ROLE
-      const updatedUser = {
-        ...currentUser,
-        role: "recruiter",
-      };
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(updatedUser)
-      );
-
-      // AGUARDA 3 SEGUNDOS E REDIRECIONA
-      setTimeout(() => {
-        navigate("/recruiter/profile");
-      }, 3000);
+      setShowEditModal(false);
 
     } catch (error) {
       console.error(error);
     }
   };
 
-  // =========================
-  // RECUSAR CONVITE
-  // =========================
+  const timeline = [
+    {
+      id: 1,
+      date: "2026-03",
+      type: "Projeto Acadêmico",
+      icon: <GraduationCap size={14} />,
+      description:
+        "Publicou plano de marketing para ONG local",
+    },
 
-  const handleRejectInvite = async (
-    inviteId
-  ) => {
-    try {
+    {
+      id: 2,
+      date: "2026-02",
+      type: "Experiência Profissional",
+      icon: <BriefcaseBusiness size={14} />,
+      description:
+        "Concluiu estágio em Recursos Humanos",
+    },
 
-      const token =
-        localStorage.getItem("token");
+    {
+      id: 3,
+      date: "2026-01",
+      type: "Certificação",
+      icon: <BadgeCheck size={14} />,
+      description:
+        "Obteve certificação em Gestão de Projetos (FGV)",
+    },
 
-      const response = await fetch(
-        `${API_URL}/User/reject-invite/${inviteId}`,
-        {
-          method: "DELETE",
+    {
+      id: 4,
+      date: "2025-11",
+      type: "Pesquisa",
+      icon: <FlaskConical size={14} />,
+      description:
+        "Participou de pesquisa acadêmica sobre liderança",
+    },
+  ];
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  const handleNavPublicar = () => {
+    navigate("/student/publicar");
+  }
 
-      if (!response.ok) {
-        throw new Error(
-          "Erro ao recusar convite"
-        );
-      }
-
-      // REMOVE LOCALMENTE
-      setRecruiterInvites((prev) =>
-        prev.filter(
-          (invite) =>
-            invite.id !== inviteId
-        )
-      );
-
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     <div className="student-profile">
-
-      {/* TELA DE TRANSIÇÃO */}
-      {isTransitioning && (
-        <div className="student-profile__transition">
-          <div className="student-profile__transition-content">
-            <div className="student-profile__transition-header">
-              <h2>Parabéns, {transitionUser}! 🎉</h2>
-              <p>
-                Você acaba de iniciar uma nova jornada na nossa plataforma...
-              </p>
-            </div>
-
-            <div className="student-profile__transition-loader">
-              <div className="spinner"></div>
-              <p>Carregando novo visual...</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* HEADER */}
       <div className="student-profile__header">
 
-        <div>
+        <div className="student-profile__cover" />
 
-          <span className="student-profile__subtitle">
-            Área do estudante
+        <div className="student-profile__top">
+
+          <div className="student-profile__avatar">
+
+            <img
+              src={
+                studentProfile.profileImage ||
+                "https://api.dicebear.com/7.x/adventurer/svg?seed=User"
+              }
+              alt={user?.name}
+            />
+
+          </div>
+
+          <span className="student-profile__badge">
+
+            <GraduationCap size={14} />
+
+            Conta de Estudante
+
           </span>
-
-          <h1 className="student-profile__title">
-            Meu Perfil
-          </h1>
 
         </div>
 
-        {/* NOTIFICAÇÕES */}
-        <div className="student-profile__notifications">
+        <div className="student-profile__info">
 
-          <button
-            className="student-profile__notification-button"
-            onClick={() =>
-              setOpenNotifications(
-                !openNotifications
-              )
-            }
-          >
+          <div>
 
-            <Bell size={20} />
+            <h1>
+              {user?.name}
+            </h1>
 
-            {recruiterInvites.length > 0 && (
-              <span className="student-profile__badge">
-                {recruiterInvites.length}
-              </span>
-            )}
+            <p className="student-profile__course">
 
-          </button>
+              {studentProfile.course ||
+                "Curso não informado"}
 
-          {/* MODAL */}
-          {openNotifications && (
-            <div className="student-profile__notification-modal">
+            </p>
 
-              <div className="student-profile__notification-header">
+            <p className="student-profile__bio">
 
-                <h3>Notificações</h3>
+              {studentProfile.bio ||
+                "Adicione uma descrição para que recrutadores conheçam melhor seu perfil."}
+
+            </p>
+
+            <div className="student-profile__education">
+
+              <GraduationCap size={18} />
+
+              <div>
+
+                <strong>
+                  {studentProfile.university ||
+                    "Universidade não informada"}
+                </strong>
 
                 <span>
-                  {recruiterInvites.length}
-                  {" "}convite(s)
+                  Formação Acadêmica
                 </span>
 
               </div>
 
-              {loading ? (
-                <div className="student-profile__empty">
-                  Carregando...
-                </div>
-              ) : recruiterInvites.length === 0 ? (
-                <div className="student-profile__empty">
-                  Nenhuma notificação encontrada
-                </div>
-              ) : (
-                recruiterInvites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="student-profile__invite"
-                  >
+            </div>
 
-                    <div className="student-profile__invite-icon">
-                      <Building2 size={20} />
-                    </div>
+            <div className="student-profile__meta">
 
-                    <div className="student-profile__invite-content">
+              <span>
 
-                      <h4>
-                        Convite para recrutador
-                      </h4>
+                <MapPin size={16} />
 
-                      <p>
-                        A empresa{" "}
-                        <strong>
-                          {invite.company.name}
-                        </strong>
-                        {" "}
-                        convidou você para se tornar recrutador.
-                      </p>
+                {studentProfile.location ||
+                  "Localização não informada"}
 
-                      <span>
-                        Cargo: {invite.position}
-                      </span>
+              </span>
 
-                      <div className="student-profile__invite-actions">
+              <span>
 
-                        <button
-                          className="accept"
-                          onClick={() =>
-                            handleAcceptInvite(
-                              invite.id
-                            )
-                          }
-                        >
+                <CalendarDays size={16} />
 
-                          <Check size={16} />
+                Membro desde{" "}
 
-                          Aceitar
+                {user?.createdAt
+                  ? new Date(
+                    user.createdAt
+                  ).toLocaleDateString(
+                    "pt-BR",
+                    {
+                      month: "long",
+                      year: "numeric",
+                    }
+                  )
+                  : "-"}
 
-                        </button>
+              </span>
 
-                        <button
-                          className="reject"
-                          onClick={() =>
-                            handleRejectInvite(
-                              invite.id
-                            )
-                          }
-                        >
+            </div>
 
-                          <X size={16} />
+            <div className="student-profile__links-inline">
 
-                          Recusar
+              {studentProfile.linkedin && (
 
-                        </button>
+                <a
+                  href={studentProfile.linkedin}
+                  target="_blank"
+                  rel="noreferrer"
+                >
 
-                      </div>
+                  <ExternalLink size={16} />
 
-                    </div>
+                  LinkedIn
 
-                  </div>
-                ))
+                </a>
+
+              )}
+
+              {studentProfile.github && (
+
+                <a
+                  href={studentProfile.github}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+
+                  <ExternalLink size={16} />
+
+                  GitHub
+
+                </a>
+
               )}
 
             </div>
-          )}
+
+          </div>
+
+          <button
+            className="student-profile__edit"
+            onClick={handleOpenEdit}
+          >
+
+            <Pencil size={18} />
+
+            Editar Perfil
+
+          </button>
+
+        </div>
+
+        <div className="student-profile__stats">
+
+          <div>
+
+            <strong>
+              {userPosts.length}
+            </strong>
+
+            <span>
+              Publicações
+            </span>
+
+          </div>
+
+          <div>
+
+            <strong>
+              {studentProfile.skills?.length || 0}
+            </strong>
+
+            <span>
+              Habilidades
+            </span>
+
+          </div>
+
+          <div>
+
+            <strong className="highlight">
+
+              {studentProfile.university &&
+                studentProfile.course &&
+                studentProfile.location
+                ? "100%"
+                : "70%"}
+
+            </strong>
+
+            <span>
+              Perfil Completo
+            </span>
+
+          </div>
 
         </div>
 
       </div>
 
-      {/* CONTEÚDO */}
-      <div className="student-profile__content">
+      <div className="student-profile__section">
+
+        <h2>Sobre</h2>
+
+        <p className="student-profile__about">
+
+          {studentProfile.bio ||
+            "Nenhuma descrição adicionada."}
+
+        </p>
+
+      </div>
+
+      {/* CARDS */}
+      <div className="student-profile__cards">
 
         <div className="student-profile__card">
 
-          <h2>Bem-vindo 👋</h2>
+          <div className="student-profile__card-header">
+
+            <h3>Perfil completo</h3>
+
+            <span>78%</span>
+
+          </div>
+
+          <div className="student-profile__progress">
+
+            <div
+              className="student-profile__progress-fill"
+              style={{ width: "78%" }}
+            />
+
+          </div>
 
           <p>
-            Aqui ficará o perfil completo do estudante,
-            projetos, currículo, experiências e muito mais.
+            Adicione seu currículo para completar o
+            perfil.
           </p>
 
         </div>
 
+        <div className="student-profile__card">
+
+          <div className="student-profile__cv">
+
+            <div>
+
+              <FileText size={22} />
+
+              <div>
+
+                <h3>Currículo</h3>
+
+                <p>
+                  Envie seu CV em PDF para
+                  recrutadores.
+                </p>
+
+              </div>
+
+            </div>
+
+            <button>
+              Upload de Currículo
+            </button>
+
+          </div>
+
+        </div>
+
       </div>
 
+      {/* HABILIDADES */}
+      <div className="student-profile__section">
+        <div className="student-profile__section-header">
+          <h2>Habilidades</h2>
+          <button>
+            <Plus size={18} />
+            Adicionar
+          </button>
+        </div>
+        
+        <div className="student-profile__skills">
+          {studentProfile.skills?.map((skill) => (
+            <span
+              key={
+                typeof skill === "string"
+                  ? skill
+                  : skill.id
+              }
+            >
+              {typeof skill === "string"
+                ? skill
+                : skill.name}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* LINKS */}
+      <div className="student-profile__section">
+
+        <h2>Links</h2>
+
+        <div className="student-profile__links">
+
+          <a href="/">
+            <ExternalLink size={18} />
+            Portfólio
+          </a>
+
+          <a href="/">
+            <ExternalLink size={18} />
+            LinkedIn
+          </a>
+
+        </div>
+
+      </div>
+
+      {/* PUBLICAÇÕES */}
+      <div className="student-profile__section">
+
+        <div className="student-profile__section-header">
+
+          <h2>Minhas Publicações</h2>
+
+          <button onClick={handleNavPublicar}>
+            <Plus size={18} />
+            Nova
+          </button>
+
+        </div>
+
+        {loadingPosts ? (
+
+          <p>
+            Carregando publicações...
+          </p>
+
+        ) : userPosts.length === 0 ? (
+
+          <div className="student-profile__empty">
+
+            <User size={48} />
+
+            <p>
+              Nenhuma publicação ainda.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="student-profile__posts-scroll">
+
+            {userPosts.map((post) => (
+
+              <div
+                className="student-profile__post-card"
+                key={post.id}
+              >
+
+                {post.mediaUrl && (
+
+                  <div className="post-image">
+
+                    <img
+                      src={post.mediaUrl}
+                      alt={post.title}
+                    />
+
+                  </div>
+
+                )}
+
+                <div className="post-content">
+
+                  <span className="post-type">
+                    {post.activityType}
+                  </span>
+
+                  <h3>
+                    {post.title}
+                  </h3>
+
+                  <p>
+                    {post.description}
+                  </p>
+
+                  <span className="post-level">
+                    {post.level}
+                  </span>
+
+                </div>
+
+              </div>
+
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* TRAJETÓRIA */}
+      <div className="student-profile__section">
+
+        <h2>Trajetória</h2>
+
+        <div className="student-profile__timeline">
+
+          {timeline.map((item) => (
+
+            <div
+              className="student-profile__timeline-item"
+              key={item.id}
+            >
+
+              <div className="student-profile__timeline-dot" />
+
+              <div className="student-profile__timeline-content">
+
+                <div className="student-profile__timeline-top">
+
+                  <span className="date">
+                    {item.date}
+                  </span>
+
+                  <span className="tag">
+
+                    {item.icon}
+
+                    {item.type}
+
+                  </span>
+
+                </div>
+
+                <p>
+                  {item.description}
+                </p>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+      {/* MODAL EDITAR PERFIL */}
+      {showEditModal && (
+
+        <div className="student-profile__modal-overlay">
+
+          <div className="student-profile__modal">
+
+            <div className="student-profile__modal-header">
+
+              <h2>Editar Perfil</h2>
+
+              <button
+                onClick={() =>
+                  setShowEditModal(false)
+                }
+              >
+                <X size={20} />
+              </button>
+
+            </div>
+
+            <div className="student-profile__modal-body">
+
+              <div className="student-profile__form-group">
+
+                <label>Foto do Perfil</label>
+
+                <input
+                  type="text"
+                  value={editForm.profileImage}
+                  placeholder="https://..."
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      profileImage:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>Curso</label>
+
+                <input
+                  type="text"
+                  value={editForm.course}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      course:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>Universidade</label>
+
+                <input
+                  type="text"
+                  value={editForm.university}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      university:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>Localização</label>
+
+                <input
+                  type="text"
+                  value={editForm.location}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      location:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>LinkedIn</label>
+
+                <input
+                  type="text"
+                  value={editForm.linkedin}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      linkedin:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>GitHub</label>
+
+                <input
+                  type="text"
+                  value={editForm.github}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      github:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>Habilidades</label>
+
+                <input
+                  type="text"
+                  placeholder="React, C#, SQL..."
+                  value={
+                    editForm.skills.join(", ")
+                  }
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      skills:
+                        e.target.value
+                          .split(",")
+                          .map((skill) =>
+                            skill.trim()
+                          )
+                          .filter(Boolean),
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="student-profile__form-group">
+
+                <label>Sobre você</label>
+
+                <textarea
+                  rows={5}
+                  value={editForm.bio}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      bio:
+                        e.target.value,
+                    })
+                  }
+                />
+
+              </div>
+
+            </div>
+
+            <div className="student-profile__modal-footer">
+
+              <button
+                className="cancel"
+                onClick={() =>
+                  setShowEditModal(false)
+                }
+              >
+                Cancelar
+              </button>
+
+              <button
+                className="save"
+                onClick={handleSaveProfile}
+              >
+                <Save size={18} />
+                Salvar Alterações
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
     </div>
   );
 }

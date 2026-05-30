@@ -1,4 +1,4 @@
-namespace API.DTOs.Recruiter;
+namespace backend.Dtos;
 
 public class TalentResponseDto
 {

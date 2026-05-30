@@ -1,5 +1,6 @@
 import "./CompanySidebar.scss";
 
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   BriefcaseBusiness,
@@ -9,11 +10,51 @@ import {
   MessageCircle,
   Building2,
   Settings,
+  LogOut,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import API_URL from "../../../service/api";
 
 const CompanySidebar = () => {
+  const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState(null);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/User/me`, {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Falha ao buscar dados do usuário");
+        }
+
+        const data = await response.json();
+        setUserInfo(data);
+      } catch (err) {
+        console.error("Erro ao buscar usuário:", err);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
   return (
     <aside className="company-sidebar">
 
@@ -25,14 +66,9 @@ const CompanySidebar = () => {
           </div>
 
           <div className="company-sidebar__logo-text">
-            <h2>DevBridge</h2>
+            <h2>IMPULSE</h2>
             <span>COMPANY CONSOLE</span>
           </div>
-        </div>
-
-        <div className="company-sidebar__account">
-          <span className="status-dot"></span>
-          <p>Company Account</p>
         </div>
 
         <nav className="company-sidebar__nav">
@@ -125,17 +161,24 @@ const CompanySidebar = () => {
 
         <div className="company-sidebar__company">
 
-          <img
-            src="https://i.pravatar.cc/100"
-            alt="Empresa"
-          />
+          <div className="company-sidebar__company-avatar">
+            <Building2 size={32} />
+          </div>
 
           <div className="company-sidebar__company-info">
-            <h4>Empresa ABC</h4>
-            <span>Empresa</span>
+            <h4>{userInfo?.name || "Empresa"}</h4>
+            <span>{userInfo?.role ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1) : "Empresa"}</span>
           </div>
 
         </div>
+
+        <button 
+          className="company-sidebar__logout"
+          onClick={handleLogout}
+          title="Sair da conta"
+        >
+          <LogOut size={20} />
+        </button>
 
       </div>
 

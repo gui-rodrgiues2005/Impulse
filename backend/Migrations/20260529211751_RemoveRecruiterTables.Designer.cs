@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260529211751_RemoveRecruiterTables")]
+    partial class RemoveRecruiterTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,11 +31,11 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid");
@@ -42,7 +45,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("RecruiterId");
 
                     b.HasIndex("StudentId");
 
@@ -111,6 +114,9 @@ namespace backend.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("StudentProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -122,6 +128,8 @@ namespace backend.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentProfileId");
 
                     b.ToTable("Activities");
                 });
@@ -222,24 +230,21 @@ namespace backend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Course")
                         .HasColumnType("text");
 
                     b.Property<string>("Github")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Linkedin")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("Location")
                         .HasColumnType("text");
 
                     b.Property<string>("ProfileImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Skills")
                         .HasColumnType("text");
 
                     b.Property<string>("University")
@@ -402,9 +407,9 @@ namespace backend.Migrations
 
             modelBuilder.Entity("API.Models.SavedTalent", b =>
                 {
-                    b.HasOne("User", "Company")
+                    b.HasOne("User", "Recruiter")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -418,7 +423,7 @@ namespace backend.Migrations
                         .WithMany("SavedTalents")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("Company");
+                    b.Navigation("Recruiter");
 
                     b.Navigation("Student");
                 });
@@ -432,6 +437,13 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Activity", b =>
+                {
+                    b.HasOne("StudentProfile", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("StudentProfileId");
                 });
 
             modelBuilder.Entity("ActivityTag", b =>
@@ -524,6 +536,11 @@ namespace backend.Migrations
             modelBuilder.Entity("Activity", b =>
                 {
                     b.Navigation("ActivityTags");
+                });
+
+            modelBuilder.Entity("StudentProfile", b =>
+                {
+                    b.Navigation("Activities");
                 });
 
             modelBuilder.Entity("Tag", b =>

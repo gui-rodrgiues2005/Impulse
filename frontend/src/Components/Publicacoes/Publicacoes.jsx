@@ -57,7 +57,7 @@ function PublicarAtividade() {
                 visibility,
                 mediaUrl: null,
 
-                // ⚠️ ainda mockado (futuro: converter skill → GUID)
+
                 skillIds: [],
             };
 
@@ -125,6 +125,8 @@ function PublicarAtividade() {
                             <option value="Trabalho voluntário">Trabalho voluntário</option>
                             <option value="Pesquisa">Pesquisa</option>
                             <option value="Certificação">Certificação</option>
+                            <option value="Oportunidade">Oportunidade</option>
+                            <option value="Dica Profissional">Dica Profissional</option>
                         </select>
                         <ChevronDown size={18} />
                     </div>
