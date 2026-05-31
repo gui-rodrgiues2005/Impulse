@@ -4,5 +4,6 @@ public enum ActivityType
     AtividadeAcademica,
     Pesquisa,
     Estagio,
-    Evento
+    Evento,
+    Oportunidade
 }

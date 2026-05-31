@@ -22,9 +22,6 @@ public class Company
     public string? Areas { get; set; }
 
     // RELAÇÕES
-    public List<RecruiterProfile> Recruiters { get; set; }
-        = new();
-
     public Guid UserId { get; set; }
 
     public User User { get; set; } = null!;

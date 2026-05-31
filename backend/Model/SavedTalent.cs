@@ -4,9 +4,9 @@ public class SavedTalent
 {
     public Guid Id { get; set; }
 
-    public Guid RecruiterId { get; set; }
+    public Guid CompanyId { get; set; }
 
-    public User Recruiter { get; set; }
+    public User Company { get; set; }
 
     public Guid StudentId { get; set; }
 

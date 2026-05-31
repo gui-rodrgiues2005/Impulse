@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import "./Feed.scss";
+import {
+  Heart,
+  MessageCircle,
+  Star,
+  User,
+} from "lucide-react";
 
 import API_URL from "../../service/api";
 
@@ -12,7 +18,7 @@ function Feed() {
             try {
                 const token = localStorage.getItem("token");
 
-                const response = await fetch(`${API_URL}/feed`, {
+                const response = await fetch(`${API_URL}/publicacoes`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -49,10 +55,16 @@ function Feed() {
                         {/* HEADER USER */}
                         <div className="feed-user">
                             <div className="user-info">
+                                {post.userAvatar ? (
                                 <img
-                                    src={post.userAvatar || "https://i.pravatar.cc/40"}
+                                    src={post.userAvatar}
                                     alt="avatar"
                                 />
+                            ) : (
+                                <div className="default-avatar">
+                                    <User size={20} />
+                                </div>
+                            )}
 
                                 <div>
                                     <strong>{post.userName}</strong>
@@ -87,12 +99,16 @@ function Feed() {
                         <div className="feed-footer">
 
                             <div className="engagement">
-                                <span>❤️ {post.likes}</span>
-                                <span>💬 {post.comments}</span>
+                                <span>
+                                  <Heart size={18} /> {post.likes}
+                                </span>
+                                <span>
+                                  <MessageCircle size={18} /> {post.comments}
+                                </span>
                             </div>
 
                             <div className="rating">
-                                ⭐ {post.rating}
+                              <Star size={18} /> {post.rating}
                             </div>
                         </div>
 

@@ -30,10 +30,7 @@ namespace backend.Controllers
         )
         {
             var existingUser = await _context.Users
-
-                .Include(u => u.RecruiterProfile)
                 .Include(u => u.StudentProfile)
-
                 .FirstOrDefaultAsync(u => u.Email == user.Email);
 
             if (existingUser == null)
@@ -97,10 +94,6 @@ namespace backend.Controllers
                     .Where(c => c.UserId == existingUser.Id)
                     .Select(c => c.Id)
                     .FirstOrDefaultAsync();
-            }
-            else if (existingUser.Role == UserRole.Recruiter)
-            {
-                companyId = existingUser.RecruiterProfile?.CompanyId;
             }
 
             return Ok(new

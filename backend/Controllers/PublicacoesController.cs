@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace API.Controllers;
 
 [ApiController]
-[Route("api/feed")]
+[Route("api/publicacoes")]
 public class PublicacoesController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -61,5 +61,107 @@ public class PublicacoesController : ControllerBase
             .ToListAsync();
 
         return Ok(posts);
+    }
+
+    [Authorize]
+    [HttpGet("my-posts")]
+    public async Task<ActionResult<List<FeedPostResponseDto>>> GetMyPosts()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var posts = await _context.FeedPosts
+            .Include(x => x.User)
+            .Include(x => x.Skills)
+            .Where(x => x.UserId.ToString() == userId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new FeedPostResponseDto
+            {
+                Id = x.Id,
+
+                UserId = x.UserId,
+
+                UserName = x.User.Name,
+
+                UserAvatar = x.User.AvatarUrl,
+
+                UserRole = x.User.Role.ToString(),
+
+                Title = x.Title,
+
+                Description = x.Description,
+
+                ActivityType = x.ActivityType,
+
+                Level = x.Level,
+
+                Link = x.Link,
+
+                MediaUrl = x.MediaUrl,
+
+                Visibility = x.Visibility,
+
+                CreatedAt = x.CreatedAt,
+
+                Skills = x.Skills
+                    .Select(skill => skill.Name)
+                    .ToList()
+            })
+            .ToListAsync();
+
+        return Ok(posts);
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<ActionResult<FeedPostResponseDto>> CreatePost(
+        [FromBody] CreateFeedPostDto dto
+    )
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        if (!Guid.TryParse(userId, out var parsedUserId))
+        {
+            return BadRequest(new { message = "ID de usuário inválido" });
+        }
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == parsedUserId);
+        
+        if (user == null)
+        {
+            return NotFound(new { message = "Usuário não encontrado" });
+        }
+
+        var post = new FeedPost
+        {
+            UserId = parsedUserId,
+            Title = dto.Title,
+            Description = dto.Description,
+            ActivityType = dto.ActivityType,
+            Level = dto.Level,
+            Link = dto.Link ?? "",
+            MediaUrl = dto.MediaUrl,
+            Visibility = "Pública"
+        };
+
+        _context.FeedPosts.Add(post);
+        await _context.SaveChangesAsync();
+
+        return Ok(new FeedPostResponseDto
+        {
+            Id = post.Id,
+            UserId = post.UserId,
+            UserName = user.Name,
+            UserAvatar = user.AvatarUrl,
+            UserRole = user.Role.ToString(),
+            Title = post.Title,
+            Description = post.Description,
+            ActivityType = post.ActivityType,
+            Level = post.Level,
+            Link = post.Link,
+            MediaUrl = post.MediaUrl,
+            Visibility = post.Visibility,
+            CreatedAt = post.CreatedAt,
+            Skills = []
+        });
     }
 }

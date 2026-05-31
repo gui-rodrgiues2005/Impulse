@@ -17,9 +17,6 @@ namespace backend.Data
         // PROFILES
         public DbSet<StudentProfile> StudentProfiles { get; set; }
 
-        public DbSet<RecruiterProfile> RecruiterProfiles { get; set; }
-
-        public DbSet<RecruiterInvite> RecruiterInvites { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Talent> Talents { get; set; }
@@ -65,15 +62,6 @@ namespace backend.Data
                 .WithOne(sp => sp.User)
                 .HasForeignKey<StudentProfile>(sp => sp.UserId);
 
-            // =========================================
-            // USER -> RECRUITER PROFILE (1:1)
-            // =========================================
-
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.RecruiterProfile)
-                .WithOne(rp => rp.User)
-                .HasForeignKey<RecruiterProfile>(rp => rp.UserId);
-
             modelBuilder.Entity<Talent>()
                 .HasOne(t => t.User)
                 .WithMany(u => u.Talents)
@@ -81,9 +69,9 @@ namespace backend.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<SavedTalent>()
-                .HasOne(x => x.Recruiter)
+                .HasOne(x => x.Company)
                 .WithMany()
-                .HasForeignKey(x => x.RecruiterId)
+                .HasForeignKey(x => x.CompanyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<SavedTalent>()
@@ -93,7 +81,7 @@ namespace backend.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // =========================================
-            // COMPANY -> RECRUITERS (1:N)
+            // COMPANY -> USER (1:1)
             // =========================================
 
             modelBuilder.Entity<Company>()
@@ -101,11 +89,6 @@ namespace backend.Data
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<RecruiterProfile>()
-                .HasOne(rp => rp.Company)
-                .WithMany(c => c.Recruiters)
-                .HasForeignKey(rp => rp.CompanyId);
         }
     }
 }

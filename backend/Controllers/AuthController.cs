@@ -66,17 +66,6 @@ namespace backend.Controllers
                 _context.StudentProfiles.Add(studentProfile);
             }
 
-            // PERFIL RECRUITER
-            if (newUser.Role == UserRole.Recruiter)
-            {
-                var recruiterProfile = new RecruiterProfile
-                {
-                    UserId = newUser.Id
-                };
-
-                _context.RecruiterProfiles.Add(recruiterProfile);
-            }
-
             // PERFIL COMPANY
             if (newUser.Role == UserRole.Company)
             {

@@ -70,8 +70,7 @@ export default function Register() {
       try {
         data = await response.json();
       } catch (parseError) {
-        const text = await response.text();
-        throw new Error(`Erro ao processar resposta do servidor: ${text}`);
+        throw new Error(`Erro ao processar resposta do servidor: resposta inválida`);
       }
 
       if (!response.ok) {

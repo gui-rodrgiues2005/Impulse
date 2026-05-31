@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260527032603_ColunsUserNull")]
+    partial class ColunsUserNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,11 +31,11 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RecruiterId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid");
@@ -42,7 +45,7 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CompanyId");
+                    b.HasIndex("RecruiterId");
 
                     b.HasIndex("StudentId");
 
@@ -111,6 +114,9 @@ namespace backend.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("StudentProfileId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("text");
@@ -122,6 +128,8 @@ namespace backend.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudentProfileId");
 
                     b.ToTable("Activities");
                 });
@@ -185,6 +193,65 @@ namespace backend.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("RecruiterInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Accepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RecruiterInvites");
+                });
+
+            modelBuilder.Entity("RecruiterProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Position")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfileImage")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("RecruiterProfiles");
+                });
+
             modelBuilder.Entity("Skill", b =>
                 {
                     b.Property<Guid>("Id")
@@ -222,24 +289,21 @@ namespace backend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Bio")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Course")
                         .HasColumnType("text");
 
                     b.Property<string>("Github")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Linkedin")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<string>("Location")
                         .HasColumnType("text");
 
                     b.Property<string>("ProfileImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Skills")
                         .HasColumnType("text");
 
                     b.Property<string>("University")
@@ -402,9 +466,9 @@ namespace backend.Migrations
 
             modelBuilder.Entity("API.Models.SavedTalent", b =>
                 {
-                    b.HasOne("User", "Company")
+                    b.HasOne("User", "Recruiter")
                         .WithMany()
-                        .HasForeignKey("CompanyId")
+                        .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -418,7 +482,7 @@ namespace backend.Migrations
                         .WithMany("SavedTalents")
                         .HasForeignKey("UserId");
 
-                    b.Navigation("Company");
+                    b.Navigation("Recruiter");
 
                     b.Navigation("Student");
                 });
@@ -432,6 +496,13 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Activity", b =>
+                {
+                    b.HasOne("StudentProfile", null)
+                        .WithMany("Activities")
+                        .HasForeignKey("StudentProfileId");
                 });
 
             modelBuilder.Entity("ActivityTag", b =>
@@ -460,6 +531,44 @@ namespace backend.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RecruiterInvite", b =>
+                {
+                    b.HasOne("Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("RecruiterProfile", b =>
+                {
+                    b.HasOne("Company", "Company")
+                        .WithMany("Recruiters")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", "User")
+                        .WithOne("RecruiterProfile")
+                        .HasForeignKey("RecruiterProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
 
                     b.Navigation("User");
                 });
@@ -526,6 +635,16 @@ namespace backend.Migrations
                     b.Navigation("ActivityTags");
                 });
 
+            modelBuilder.Entity("Company", b =>
+                {
+                    b.Navigation("Recruiters");
+                });
+
+            modelBuilder.Entity("StudentProfile", b =>
+                {
+                    b.Navigation("Activities");
+                });
+
             modelBuilder.Entity("Tag", b =>
                 {
                     b.Navigation("ActivityTags");
@@ -533,6 +652,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("User", b =>
                 {
+                    b.Navigation("RecruiterProfile");
+
                     b.Navigation("SavedTalents");
 
                     b.Navigation("Skills");
