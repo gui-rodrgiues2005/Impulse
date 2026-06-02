@@ -16,7 +16,6 @@ namespace backend.Data
 
         // PROFILES
         public DbSet<StudentProfile> StudentProfiles { get; set; }
-
         public DbSet<Company> Companies { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Talent> Talents { get; set; }
@@ -29,8 +28,11 @@ namespace backend.Data
 
         // TAGS
         public DbSet<Tag> Tags { get; set; }
-
         public DbSet<ActivityTag> ActivityTags { get; set; }
+
+        // CANDIDATURAS E NOTIFICAÇÕES
+        public DbSet<JobApplication> JobApplications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -88,6 +90,49 @@ namespace backend.Data
                 .HasOne(c => c.User)
                 .WithMany()
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================================
+            // JOB APPLICATION (N:N — Aluno x Vaga)
+            // =========================================
+
+            modelBuilder.Entity<JobApplication>()
+                .HasOne(ja => ja.Job)
+                .WithMany()
+                .HasForeignKey(ja => ja.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<JobApplication>()
+                .HasOne(ja => ja.StudentUser)
+                .WithMany()
+                .HasForeignKey(ja => ja.StudentUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Impede candidatura duplicada
+            modelBuilder.Entity<JobApplication>()
+                .HasIndex(ja => new { ja.JobId, ja.StudentUserId })
+                .IsUnique();
+
+            // =========================================
+            // NOTIFICATION
+            // =========================================
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Company)
+                .WithMany()
+                .HasForeignKey(n => n.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Job)
+                .WithMany()
+                .HasForeignKey(n => n.JobId)
+                .OnDelete(DeleteBehavior.Restrict); // Não deleta notificação se deletar vaga
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.StudentUser)
+                .WithMany()
+                .HasForeignKey(n => n.StudentUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

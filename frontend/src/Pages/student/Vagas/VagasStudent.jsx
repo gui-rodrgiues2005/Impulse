@@ -16,6 +16,7 @@ const VagasStudent = () => {
   const [filtroArea, setFiltroArea] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroLocalizacao, setFiltroLocalizacao] = useState('');
+  const [candidaturas, setCandidaturas] = useState({}); // { [jobId]: 'idle' | 'loading' | 'done' | 'error' }
 
   useEffect(() => {
     fetchVagas();
@@ -34,9 +35,7 @@ const VagasStudent = () => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao buscar vagas');
-      }
+      if (!response.ok) throw new Error('Erro ao buscar vagas');
 
       const data = await response.json();
       setVagas(data);
@@ -49,6 +48,45 @@ const VagasStudent = () => {
     }
   };
 
+  const handleCandidatar = async (vagaId) => {
+    setCandidaturas((prev) => ({ ...prev, [vagaId]: 'loading' }));
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${API_URL}/jobs/${vagaId}/apply`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Já se candidatou
+        if (response.status === 400) {
+          setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
+          return;
+        }
+        throw new Error(data.message || 'Erro ao se candidatar');
+      }
+
+      setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
+
+      // Atualiza o contador de candidatos na vaga localmente
+      setVagas((prev) =>
+        prev.map((v) =>
+          v.id === vagaId ? { ...v, candidates: v.candidates + 1 } : v
+        )
+      );
+    } catch (err) {
+      console.error('Erro ao se candidatar:', err);
+      setCandidaturas((prev) => ({ ...prev, [vagaId]: 'error' }));
+    }
+  };
+
   const vagasFiltradas = vagas.filter((vaga) => {
     return (
       (!filtroArea || vaga.area.toLowerCase().includes(filtroArea.toLowerCase())) &&
@@ -58,8 +96,20 @@ const VagasStudent = () => {
   });
 
   const formatarData = (data) => {
-    const date = new Date(data);
-    return date.toLocaleDateString('pt-BR');
+    return new Date(data).toLocaleDateString('pt-BR');
+  };
+
+  const getBtnLabel = (vagaId) => {
+    const status = candidaturas[vagaId];
+    if (status === 'loading') return 'Enviando...';
+    if (status === 'done') return '✓ Candidatura enviada';
+    if (status === 'error') return 'Erro, tentar novamente';
+    return 'Candidatar-se';
+  };
+
+  const getBtnDisabled = (vagaId) => {
+    const status = candidaturas[vagaId];
+    return status === 'loading' || status === 'done';
   };
 
   if (loading) {
@@ -175,7 +225,13 @@ const VagasStudent = () => {
               </div>
             </div>
 
-            <button className="btn-candidatar">Candidatar-se</button>
+            <button
+              className={`btn-candidatar ${candidaturas[vaga.id] === 'done' ? 'btn-candidatar--done' : ''} ${candidaturas[vaga.id] === 'error' ? 'btn-candidatar--error' : ''}`}
+              onClick={() => handleCandidatar(vaga.id)}
+              disabled={getBtnDisabled(vaga.id)}
+            >
+              {getBtnLabel(vaga.id)}
+            </button>
           </div>
         ))}
       </div>

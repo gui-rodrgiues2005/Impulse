@@ -1,0 +1,13 @@
+[1mdiff --git a/backend/appsettings.json b/backend/appsettings.json[m
+[1mindex cc3ee14..6b86050 100644[m
+[1m--- a/backend/appsettings.json[m
+[1m+++ b/backend/appsettings.json[m
+[36m@@ -6,7 +6,7 @@[m
+     }[m
+   },[m
+   "ConnectionStrings": {[m
+[31m-    "DefaultConnection": "Host=localhost;Port=5432;Database=impulse_database;Username=postgres;Password=2005"[m
+[32m+[m[32m    "DefaultConnection": "Host=localhost;Port=5432;Database=impulse_database;Username=postgres;Password=2020"[m
+   },[m
+   "Cloudinary": {[m
+     "CloudName": "dliq7zqzd",[m

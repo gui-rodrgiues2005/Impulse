@@ -104,19 +104,8 @@ function AppRoutes() {
           />
 
           <Route
-<<<<<<< HEAD
-            path="profile"
-            element={<RecruiterProfile />}
-
-          />
-
-          <Route
-            path="reviews"
-            element={<Reviews />}
-=======
             path="vagas"
             element={<VagasStudent />}
->>>>>>> origin/main
           />
 
         </Route>
