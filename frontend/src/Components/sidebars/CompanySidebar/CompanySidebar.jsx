@@ -100,11 +100,6 @@ const CompanySidebar = () => {
             <span>Candidatos</span>
           </NavLink>
 
-          <NavLink to="/company/recrutadores" className="company-sidebar__item">
-            <UserRoundSearch size={20} />
-            <span>Recrutadores</span>
-          </NavLink>
-
           <NavLink to="/company/analytics" className="company-sidebar__item">
             <BarChart3 size={20} />
             <span>Analytics</span>
