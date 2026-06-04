@@ -19,7 +19,11 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET ALL JOBS
+        // =========================================
+        // BUSCA TODAS AS VAGAS
+        // Retorna lista de vagas com dados da empresa
+        // Acessível por qualquer usuário (sem autenticação)
+        // =========================================
         [HttpGet]
         public async Task<IActionResult> GetAllJobs()
         {
@@ -48,7 +52,11 @@ namespace backend.Controllers
             }));
         }
 
-        // GET JOB BY ID
+        // =========================================
+        // BUSCA VAGA POR ID
+        // Retorna detalhes de uma vaga específica
+        // Acessível por qualquer usuário (sem autenticação)
+        // =========================================
         [HttpGet("{id}")]
         public async Task<IActionResult> GetJobById(Guid id)
         {
@@ -80,7 +88,11 @@ namespace backend.Controllers
             });
         }
 
-        // CREATE JOB - ONLY COMPANY
+        // =========================================
+        // CRIA UMA NOVA VAGA
+        // Apenas empresas autenticadas podem criar vagas
+        // O CompanyId é buscado automaticamente pelo UserId do token
+        // =========================================
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
@@ -90,15 +102,18 @@ namespace backend.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("ID claim não encontrada no token.");
 
+            // Verifica se o usuário existe
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
 
             if (user == null)
                 return StatusCode(403, new { message = $"Usuário não encontrado. UserId do token: '{userId}'" });
 
+            // Verifica se o usuário é do tipo Company
             if (user.Role.ToString() != "Company")
                 return StatusCode(403, new { message = $"Role atual: '{user.Role}' | ToString: '{user.Role.ToString()}'" });
 
+            // Busca a empresa vinculada ao usuário
             var company = await _context.Companies
                 .FirstOrDefaultAsync(c => c.UserId == Guid.Parse(userId));
 
@@ -132,7 +147,11 @@ namespace backend.Controllers
             });
         }
 
-        // UPDATE JOB - ONLY COMPANY OWNER
+        // =========================================
+        // ATUALIZA UMA VAGA
+        // Apenas a empresa dona da vaga pode atualizar
+        // Verifica se o CompanyId da vaga pertence ao usuário logado
+        // =========================================
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(Guid id, [FromBody] CreateJobDto dto)
@@ -148,6 +167,7 @@ namespace backend.Controllers
             if (job == null)
                 return NotFound(new { message = "Vaga não encontrada." });
 
+            // Verifica se a empresa dona da vaga pertence ao usuário logado
             var company = await _context.Companies
                 .FirstOrDefaultAsync(c => c.Id == job.CompanyId && c.UserId == Guid.Parse(userId));
 
@@ -165,7 +185,10 @@ namespace backend.Controllers
             return Ok(new { message = "Vaga atualizada com sucesso." });
         }
 
-        // DELETE JOB - ONLY COMPANY OWNER
+        // =========================================
+        // DELETA UMA VAGA
+        // Apenas a empresa dona da vaga pode deletar
+        // =========================================
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(Guid id)
@@ -181,6 +204,7 @@ namespace backend.Controllers
             if (job == null)
                 return NotFound(new { message = "Vaga não encontrada." });
 
+            // Verifica se a empresa dona da vaga pertence ao usuário logado
             var company = await _context.Companies
                 .FirstOrDefaultAsync(c => c.Id == job.CompanyId && c.UserId == Guid.Parse(userId));
 
@@ -193,7 +217,13 @@ namespace backend.Controllers
             return Ok(new { message = "Vaga deletada com sucesso." });
         }
 
-        // APPLY TO JOB - ONLY STUDENT
+        // =========================================
+        // CANDIDATAR-SE A UMA VAGA
+        // Apenas alunos autenticados podem se candidatar
+        // Impede candidatura duplicada
+        // Incrementa o contador de candidatos na vaga
+        // Cria uma notificação para a empresa
+        // =========================================
         [Authorize]
         [HttpPost("{id}/apply")]
         public async Task<IActionResult> ApplyToJob(Guid id)
@@ -203,12 +233,14 @@ namespace backend.Controllers
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("ID claim não encontrada no token.");
 
+            // Verifica se o usuário é aluno
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
 
             if (user == null || user.Role.ToString() != "Student")
                 return StatusCode(403, new { message = "Apenas alunos podem se candidatar a vagas." });
 
+            // Verifica se a vaga existe
             var job = await _context.Jobs
                 .Include(j => j.Company)
                 .FirstOrDefaultAsync(j => j.Id == id);
@@ -216,15 +248,18 @@ namespace backend.Controllers
             if (job == null)
                 return NotFound(new { message = "Vaga não encontrada." });
 
+            // Verifica se a vaga está aberta
             if (job.Status != "Aberta")
                 return BadRequest(new { message = "Esta vaga não está mais aceitando candidaturas." });
 
+            // Verifica se o aluno já se candidatou
             var alreadyApplied = await _context.JobApplications
                 .AnyAsync(ja => ja.JobId == id && ja.StudentUserId == Guid.Parse(userId));
 
             if (alreadyApplied)
                 return BadRequest(new { message = "Você já se candidatou a esta vaga." });
 
+            // Cria a candidatura
             var application = new JobApplication
             {
                 JobId = id,
@@ -233,9 +268,11 @@ namespace backend.Controllers
 
             _context.JobApplications.Add(application);
 
+            // Incrementa o contador de candidatos
             job.Candidates += 1;
             _context.Jobs.Update(job);
 
+            // Cria notificação para a empresa
             var notification = new Notification
             {
                 CompanyId = job.CompanyId,
@@ -250,57 +287,70 @@ namespace backend.Controllers
 
             return Ok(new { message = "Candidatura realizada com sucesso!" });
         }
-    // GET CANDIDATES BY JOB
-[Authorize]
-[HttpGet("{id}/candidates")]
-public async Task<IActionResult> GetCandidates(Guid id)
-{
-    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    if (!Guid.TryParse(userId, out var userGuid))
-        return Unauthorized();
-
-    var job = await _context.Jobs
-        .FirstOrDefaultAsync(j => j.Id == id);
-
-    if (job == null)
-        return NotFound(new { message = "Vaga não encontrada." });
-
-    var company = await _context.Companies
-        .FirstOrDefaultAsync(c => c.Id == job.CompanyId && c.UserId == userGuid);
-
-    if (company == null)
-        return StatusCode(403, new { message = "Sem permissão." });
-
-    var candidates = await _context.JobApplications
-        .Where(ja => ja.JobId == id)
-        .Include(ja => ja.StudentUser)
-            .ThenInclude(u => u.StudentProfile)
-        .OrderByDescending(ja => ja.AppliedAt)
-        .Select(ja => new
+        // =========================================
+        // BUSCA CANDIDATOS DE UMA VAGA
+        // Apenas a empresa dona da vaga pode ver os candidatos
+        // Retorna: dados do aluno, perfil, bio, skills
+        // =========================================
+        [Authorize]
+        [HttpGet("{id}/candidates")]
+        public async Task<IActionResult> GetCandidates(Guid id)
         {
-            ja.Id,
-            ja.AppliedAt,
-            ja.Status,
-            Student = new
-            {
-                ja.StudentUser.Id,
-                ja.StudentUser.Name,
-                ja.StudentUser.Email,
-                ja.StudentUser.AvatarUrl,
-                Profile = ja.StudentUser.StudentProfile == null ? null : new
-                {
-                    ja.StudentUser.StudentProfile.Course,
-                    ja.StudentUser.StudentProfile.University,
-                    ja.StudentUser.StudentProfile.Linkedin,
-                    ja.StudentUser.StudentProfile.Github,
-                    ja.StudentUser.StudentProfile.Location,
-                }
-            }
-        })
-        .ToListAsync();
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userGuid))
+                return Unauthorized();
 
-    return Ok(candidates);
+            // Verifica se a vaga existe
+            var job = await _context.Jobs
+                .FirstOrDefaultAsync(j => j.Id == id);
+
+            if (job == null)
+                return NotFound(new { message = "Vaga não encontrada." });
+
+            // Verifica se a empresa dona da vaga pertence ao usuário logado
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.Id == job.CompanyId && c.UserId == userGuid);
+
+            if (company == null)
+                return StatusCode(403, new { message = "Sem permissão." });
+
+            // Busca candidatos com perfil, bio e skills
+            var candidates = await _context.JobApplications
+                .Where(ja => ja.JobId == id)
+                .Include(ja => ja.StudentUser)
+                    .ThenInclude(u => u.StudentProfile)
+                .Include(ja => ja.StudentUser)
+                    .ThenInclude(u => u.Skills)
+                .OrderByDescending(ja => ja.AppliedAt)
+                .Select(ja => new
+                {
+                    ja.Id,
+                    ja.AppliedAt,
+                    ja.Status,
+                    Student = new
+                    {
+                        ja.StudentUser.Id,
+                        ja.StudentUser.Name,
+                        ja.StudentUser.Email,
+                        ja.StudentUser.AvatarUrl,
+                        Profile = ja.StudentUser.StudentProfile == null ? null : new
+                        {
+                            ja.StudentUser.StudentProfile.Course,
+                            ja.StudentUser.StudentProfile.University,
+                            ja.StudentUser.StudentProfile.Linkedin,
+                            ja.StudentUser.StudentProfile.Github,
+                            ja.StudentUser.StudentProfile.Location,
+                            ja.StudentUser.StudentProfile.Bio,
+                            ja.StudentUser.StudentProfile.ProfileImage,
+                        },
+                        Skills = ja.StudentUser.Skills
+                            .Select(s => s.Name)
+                            .ToList()
+                    }
+                })
+                .ToListAsync();
+
+            return Ok(candidates);
         }
     }
 }
