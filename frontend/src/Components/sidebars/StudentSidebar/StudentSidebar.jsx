@@ -99,7 +99,7 @@ const StudentSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/student/messages"
+            to="/student/chats"
             className="student-sidebar__item"
           >
             <MessageCircle size={20} />

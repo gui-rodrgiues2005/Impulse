@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Vagas.scss";
 import API_URL from "../../../service/api";
+import { QuickChatButton } from "../../../Components/QuickChatButton";
 import {
   Search, Plus, BriefcaseBusiness, Ellipsis, X,
   Users, MapPin, GraduationCap, ExternalLink, ArrowLeft
@@ -375,6 +376,15 @@ export default function Vagas() {
                     )}
                   </div>
                 )}
+
+                {/* Botão para enviar mensagem */}
+                <div className="candidate-profile__actions">
+                  <QuickChatButton
+                    userId={selectedCandidate.student.id}
+                    userName={selectedCandidate.student.name}
+                    avatarUrl={selectedCandidate.student.profile?.profileImage || selectedCandidate.student.avatarUrl}
+                  />
+                </div>
 
                 {/* Data de candidatura */}
                 <div className="candidate-profile__applied">

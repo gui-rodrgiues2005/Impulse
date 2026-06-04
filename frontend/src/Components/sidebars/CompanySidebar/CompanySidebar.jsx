@@ -105,7 +105,7 @@ const CompanySidebar = () => {
             <span>Analytics</span>
           </NavLink>
 
-          <NavLink to="/company/mensagens" className="company-sidebar__item">
+          <NavLink to="/company/chats" className="company-sidebar__item">
             <MessageCircle size={20} />
             <span>Mensagens</span>
           </NavLink>

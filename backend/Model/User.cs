@@ -1,4 +1,5 @@
 using API.Models;
+using backend.Models;
 
 public class User
 {
@@ -28,4 +29,8 @@ public class User
     public List<Talent> Talents { get; set; } = [];
     public List<Skill> Skills { get; set; } = [];
     public List<SavedTalent> SavedTalents { get; set; } = [];
+
+    // CHAT
+    public List<ConversationParticipant> ConversationParticipants { get; set; } = [];
+    public List<Message> SentMessages { get; set; } = [];
 }

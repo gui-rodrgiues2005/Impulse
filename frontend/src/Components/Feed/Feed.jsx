@@ -6,7 +6,7 @@ import {
   Star,
   User,
 } from "lucide-react";
-
+import { QuickChatButton } from "../QuickChatButton";
 import API_URL from "../../service/api";
 
 function Feed() {
@@ -71,6 +71,12 @@ function Feed() {
                                     <span>{post.createdAt}</span>
                                 </div>
                             </div>
+
+                            <QuickChatButton
+                              userId={post.userId}
+                              userName={post.userName}
+                              avatarUrl={post.userAvatar}
+                            />
 
                             <div className="tag">
                                 {post.activityType}

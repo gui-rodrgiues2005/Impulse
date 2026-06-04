@@ -1,4 +1,6 @@
 using backend.Data;
+using backend.Services;
+using backend.Hubs;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -78,6 +80,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
+// CHAT SERVICES
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+
+// SIGNALR
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 
@@ -106,5 +115,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/api/chat");
 
 app.Run();

@@ -5,8 +5,12 @@ import {
   Navigate,
 } from "react-router-dom";
 
+import { ChatProvider } from "./context/ChatContext";
+import { ChatWidgetManager } from "./Components/ChatWidgetManager";
+
 import Register from "./Pages/Register/Register";
 import Login from "./Pages/Login/Login";
+import { ChatPage } from "./Pages/ChatPage";
 
 import StudentLayout from "./Layouts/StudentLayout/StudentLayout";
 import CompanyLayout from "./Layouts/CompanyLayout/CompanyLayout";
@@ -44,154 +48,165 @@ function AppRoutes() {
   const userRole = user?.role;
 
   return (
-    <BrowserRouter>
+    <ChatProvider>
+      <ChatWidgetManager>
+        <BrowserRouter>
+          <Routes>
+            {/* LOGIN */}
+            <Route
+              path="/"
+              element={
+                user
+                  ? (
+                    userRole === "student"
+                      ? <Navigate to="/student/profile" />
+                      : <Navigate to="/company/dashboard" />
+                  )
+                  : <Login />
+              }
+            />
 
-      <Routes>
+            {/* REGISTER */}
+            <Route
+              path="/register"
+              element={
+                user
+                  ? (
+                    userRole === "student"
+                      ? <Navigate to="/student/profile" />
+                      : <Navigate to="/company/dashboard" />
+                  )
+                  : <Register />
+              }
+            />
 
-        {/* LOGIN */}
-        <Route
-          path="/"
-          element={
-            user
-              ? (
-                userRole === "student"
-                  ? <Navigate to="/student/profile" />
-                  : <Navigate to="/company/dashboard" />
-              )
-              : <Login />
-          }
-        />
+            {/* ========================= */}
+            {/* STUDENT */}
+            {/* ========================= */}
 
-        {/* REGISTER */}
-        <Route
-          path="/register"
-          element={
-            user
-              ? (
-                userRole === "student"
-                  ? <Navigate to="/student/profile" />
-                  : <Navigate to="/company/dashboard" />
-              )
-              : <Register />
-          }
-        />
+            <Route
+              path="/student"
+              element={
+                <ProtectedRoute>
+                  <StudentLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route
+                path="profile"
+                element={<StudentProfile />}
+              />
 
-        {/* ========================= */}
-        {/* STUDENT */}
-        {/* ========================= */}
+              <Route
+                path="publicar"
+                element={<Publicacoes />}
+              />
 
-        <Route
-          path="/student"
-          element={
-            <ProtectedRoute>
-              <StudentLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route
-            path="profile"
-            element={<StudentProfile />}
-          />
+              <Route
+                path="feed"
+                element={<Feed />}
+              />
 
-          <Route
-            path="publicar"
-            element={<Publicacoes />}
-          />
+              <Route
+                path="chats"
+                element={<ChatPage />}
+              />
 
-          <Route
-            path="feed"
-            element={<Feed />}
-          />
+              <Route
+                path="vagas"
+                element={<VagasStudent />}
+              />
 
-          <Route
-            path="vagas"
-            element={<VagasStudent />}
-          />
+            </Route>
 
-        </Route>
+            {/* ========================= */}
+            {/* COMPANY */}
+            {/* ========================= */}
 
-        {/* ========================= */}
-        {/* COMPANY */}
-        {/* ========================= */}
+            <Route
+              path="/company"
+              element={
+                <ProtectedRoute>
+                  <CompanyLayout />
+                </ProtectedRoute>
+              }
+            >
 
-        <Route
-          path="/company"
-          element={
-            <ProtectedRoute>
-              <CompanyLayout />
-            </ProtectedRoute>
-          }
-        >
+              <Route
+                path="dashboard"
+                element={<CompanyDashboard />}
+              />
 
-          <Route
-            path="dashboard"
-            element={<CompanyDashboard />}
-          />
+              <Route
+                path="vagas"
+                element={<Vagas />}
+              />
 
-          <Route
-            path="vagas"
-            element={<Vagas />}
-          />
+              <Route
+                path="publicar"
+                element={<Publicacoes />}
+              />
 
-          <Route
-            path="publicar"
-            element={<Publicacoes />}
-          />
+              <Route
+                path="feed"
+                element={<Feed />}
+              />
 
-          <Route
-            path="feed"
-            element={<Feed />}
-          />
+              <Route
+                path="candidatos"
+                element={<Candidatos />}
+              />
 
-          <Route
-            path="candidatos"
-            element={<Candidatos />}
-          />
+              <Route
+                path="analytics"
+                element={<Analytics />}
+              />
 
-          <Route
-            path="analytics"
-            element={<Analytics />}
-          />
+              <Route
+                path="profile"
+                element={<CompanyProfile />}
+              />
 
-          <Route
-            path="profile"
-            element={<CompanyProfile />}
-          />
+              <Route
+                path="chats"
+                element={<ChatPage />}
+              />
+              <Route
+                path="config"
+                element={<ConfigCompany />}
+              />
 
-          <Route
-            path="mensagens"
-            element={<MensagensCompany />}
-          />
+            </Route>
 
-          <Route
-            path="config"
-            element={<ConfigCompany />}
-          />
+            {/* ========================= */}
+            {/* CHAT */}
+            {/* ========================= */}
 
-        </Route>
 
-        {/* ========================= */}
-        {/* FALLBACK */}
-        {/* ========================= */}
 
-        <Route
-          path="*"
-          element={
-            !user
-              ? <Navigate to="/" />
-              : (
-                userRole === "student"
-                  ? <Navigate to="/student/profile" />
-                  : userRole === "recruiter"
-                    ? <Navigate to="/recruiter/profile" />
-                    
-                    : <Navigate to="/company/dashboard" />
-              )
-          }
-        />
-      </Routes>
+            {/* ========================= */}
+            {/* FALLBACK */}
+            {/* ========================= */}
 
-    </BrowserRouter>
+            <Route
+              path="*"
+              element={
+                !user
+                  ? <Navigate to="/" />
+                  : (
+                    userRole === "student"
+                      ? <Navigate to="/student/profile" />
+                      : userRole === "recruiter"
+                        ? <Navigate to="/recruiter/profile" />
+
+                        : <Navigate to="/company/dashboard" />
+                  )
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </ChatWidgetManager>
+    </ChatProvider>
   );
 }
 

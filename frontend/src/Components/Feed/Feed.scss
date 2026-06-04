@@ -35,7 +35,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     margin-bottom: 15px;
+
+    .user-info {
+        flex: 1;
+    }
+
+    .quick-chat-btn {
+        flex-shrink: 0;
+    }
+
+    .tag {
+        flex-shrink: 0;
+    }
 }
 
 .user-info {

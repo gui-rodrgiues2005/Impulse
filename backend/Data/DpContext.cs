@@ -34,6 +34,11 @@ namespace backend.Data
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // CHAT
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+        public DbSet<Message> Messages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -133,6 +138,41 @@ namespace backend.Data
                 .HasOne(n => n.StudentUser)
                 .WithMany()
                 .HasForeignKey(n => n.StudentUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================================
+            // CONVERSATION PARTICIPANT (N:N)
+            // =========================================
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasKey(cp => new { cp.ConversationId, cp.UserId });
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasOne(cp => cp.Conversation)
+                .WithMany(c => c.Participants)
+                .HasForeignKey(cp => cp.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasOne(cp => cp.User)
+                .WithMany(u => u.ConversationParticipants)
+                .HasForeignKey(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================================
+            // MESSAGE
+            // =========================================
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
