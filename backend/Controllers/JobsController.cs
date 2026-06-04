@@ -250,5 +250,57 @@ namespace backend.Controllers
 
             return Ok(new { message = "Candidatura realizada com sucesso!" });
         }
+    // GET CANDIDATES BY JOB
+[Authorize]
+[HttpGet("{id}/candidates")]
+public async Task<IActionResult> GetCandidates(Guid id)
+{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (!Guid.TryParse(userId, out var userGuid))
+        return Unauthorized();
+
+    var job = await _context.Jobs
+        .FirstOrDefaultAsync(j => j.Id == id);
+
+    if (job == null)
+        return NotFound(new { message = "Vaga não encontrada." });
+
+    var company = await _context.Companies
+        .FirstOrDefaultAsync(c => c.Id == job.CompanyId && c.UserId == userGuid);
+
+    if (company == null)
+        return StatusCode(403, new { message = "Sem permissão." });
+
+    var candidates = await _context.JobApplications
+        .Where(ja => ja.JobId == id)
+        .Include(ja => ja.StudentUser)
+            .ThenInclude(u => u.StudentProfile)
+        .OrderByDescending(ja => ja.AppliedAt)
+        .Select(ja => new
+        {
+            ja.Id,
+            ja.AppliedAt,
+            ja.Status,
+            Student = new
+            {
+                ja.StudentUser.Id,
+                ja.StudentUser.Name,
+                ja.StudentUser.Email,
+                ja.StudentUser.AvatarUrl,
+                Profile = ja.StudentUser.StudentProfile == null ? null : new
+                {
+                    ja.StudentUser.StudentProfile.Course,
+                    ja.StudentUser.StudentProfile.University,
+                    ja.StudentUser.StudentProfile.Linkedin,
+                    ja.StudentUser.StudentProfile.Github,
+                    ja.StudentUser.StudentProfile.Location,
+                }
+            }
+        })
+        .ToListAsync();
+
+    return Ok(candidates);
+        }
     }
 }
