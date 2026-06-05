@@ -38,7 +38,7 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"]
     };
-    
+
     options.Events = new JwtBearerEvents
     {
         OnChallenge = async context =>
@@ -53,6 +53,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<CloudinaryService>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

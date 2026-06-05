@@ -1,28 +1,50 @@
 .quick-chat-btn {
-  display: inline-flex;
+  // Mudamos de 40px fixo para min-width e padding, permitindo a expansão
+  min-width: 40px;
+  height: 40px;
+  padding: 0 11px; // Ajustado para centralizar o ícone perfeitamente quando fechado
+
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+
   border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  border-radius: 20px; // Metade da altura para manter os cantos arredondados (pílula)
+
+  background: #eef2ff;
+  color: #4f46e5;
+
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s;
+  overflow: hidden; // Esconde o texto quando estiver encolhido
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); // Transição mais suave estilo mola
+
+  flex-shrink: 0;
+
+  .btn-text {
+    max-width: 0;
+    opacity: 0;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   svg {
     width: 18px;
     height: 18px;
+    flex-shrink: 0; // Impede o ícone de amassar na animação
   }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  }
+    background: #4f46e5;
+    color: white;
+    transform: scale(1.02);
+    padding: 0 16px; // Dá um respiro nas laterais ao abrir
 
-  &:active {
-    transform: translateY(0);
+    .btn-text {
+      max-width: 120px; // Permite o texto aparecer
+      opacity: 1;
+      margin-left: 8px; // Espaçamento entre o ícone e o texto
+    }
   }
 }

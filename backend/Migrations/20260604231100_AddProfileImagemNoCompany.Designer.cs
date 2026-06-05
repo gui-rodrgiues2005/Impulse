@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using backend.Data;
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260604231100_AddProfileImagemNoCompany")]
+    partial class AddProfileImagemNoCompany
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -175,12 +178,17 @@ namespace backend.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("UserId1")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Website")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId1")
                         .IsUnique();
 
                     b.ToTable("Companies");
@@ -523,50 +531,6 @@ namespace backend.Migrations
                     b.ToTable("Notifications");
                 });
 
-            modelBuilder.Entity("backend.Models.Trajectory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("FeedPostId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsOngoing")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FeedPostId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Trajectories");
-                });
-
             modelBuilder.Entity("API.Models.SavedTalent", b =>
                 {
                     b.HasOne("User", "Company")
@@ -623,10 +587,14 @@ namespace backend.Migrations
             modelBuilder.Entity("Company", b =>
                 {
                     b.HasOne("User", "User")
-                        .WithOne("CompanyProfile")
-                        .HasForeignKey("Company", "UserId")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("User", null)
+                        .WithOne("CompanyProfile")
+                        .HasForeignKey("Company", "UserId1");
 
                     b.Navigation("User");
                 });
@@ -765,24 +733,6 @@ namespace backend.Migrations
                     b.Navigation("Job");
 
                     b.Navigation("StudentUser");
-                });
-
-            modelBuilder.Entity("backend.Models.Trajectory", b =>
-                {
-                    b.HasOne("backend.Models.FeedPost", "FeedPost")
-                        .WithMany()
-                        .HasForeignKey("FeedPostId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FeedPost");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("API.Models.Talent", b =>

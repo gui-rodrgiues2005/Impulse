@@ -24,11 +24,16 @@
 }
 
 .feed-card {
-    background: #fff;
+    background: white;
+    border: 1px solid #e5e7eb;
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all .2s ease;
+
+    &:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .08);
+    }
 }
 
 .feed-user {
@@ -45,10 +50,6 @@
     .quick-chat-btn {
         flex-shrink: 0;
     }
-
-    .tag {
-        flex-shrink: 0;
-    }
 }
 
 .user-info {
@@ -57,26 +58,54 @@
     align-items: center;
 
     img {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
+        object-fit: cover;
     }
 
     .default-avatar {
-        width: 40px;
-        height: 40px;
+        width: 52px;
+        height: 52px;
+
         border-radius: 50%;
-        background: #e0e7ff;
-        color: #4f46e5;
+
+        background: linear-gradient(135deg,
+                #6366f1,
+                #8b5cf6);
+
+        color: white;
+
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
     }
 
     span {
         font-size: 12px;
         color: gray;
+    }
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    strong {
+        font-size: 15px;
+        color: #111827;
+    }
+
+    .activity-type {
+        font-size: 13px;
+        color: #4f46e5;
+        font-weight: 500;
+    }
+
+    .post-date {
+        font-size: 12px;
+        color: #6b7280;
     }
 }
 
@@ -103,6 +132,8 @@
 }
 
 .feed-content {
+    margin-top: 15px;
+
     h2 {
         margin-bottom: 5px;
     }
@@ -122,18 +153,27 @@
 .feed-footer {
     display: flex;
     justify-content: space-between;
+
+    align-items: center;
+
+    padding-top: 12px;
+
     margin-top: 15px;
-    font-size: 14px;
+
+    border-top: 1px solid #e5e7eb;
 
     .engagement {
         display: flex;
-        gap: 15px;
+        gap: 18px;
 
         span {
             display: flex;
             align-items: center;
             gap: 6px;
-            color: #666;
+
+            color: #6b7280;
+
+            font-weight: 500;
         }
     }
 
@@ -141,6 +181,9 @@
         display: flex;
         align-items: center;
         gap: 6px;
-        color: #666;
+
+        color: #f59e0b;
+
+        font-weight: 600;
     }
 }

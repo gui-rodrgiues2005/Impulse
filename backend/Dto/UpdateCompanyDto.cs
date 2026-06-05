@@ -8,7 +8,7 @@ public class UpdateCompanyDto
 
     public string Location { get; set; } = string.Empty;
 
-    public string LogoUrl { get; set; } = string.Empty;
+    public string ProfileImage { get; set; } = string.Empty;
 
     public string LegalName { get; set; } = string.Empty;
 

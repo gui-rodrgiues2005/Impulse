@@ -91,14 +91,6 @@ const StudentSidebar = () => {
           </NavLink>
 
           <NavLink
-            to="/student/explore"
-            className="student-sidebar__item"
-          >
-            <Compass size={20} />
-            <span>Explorar</span>
-          </NavLink>
-
-          <NavLink
             to="/student/chats"
             className="student-sidebar__item"
           >

@@ -14,25 +14,62 @@ import {
 } from "lucide-react";
 
 const CompanyProfile = () => {
-
   const [company, setCompany] = useState(null);
-
   const [loading, setLoading] = useState(true);
-
   const [openModal, setOpenModal] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     website: "",
     location: "",
-    logoUrl: "",
-
+    profileImage: "",
     legalName: "",
     cnpj: "",
     sector: "",
     areas: "",
   });
+  const [selectedLogo, setSelectedLogo] =
+    useState(null);
+
+  const [uploadingLogo, setUploadingLogo] =
+    useState(false);
+
+
+  const uploadLogo = async () => {
+    if (!selectedLogo) return null;
+
+    const formDataUpload = new FormData();
+
+    formDataUpload.append(
+      "file",
+      selectedLogo
+    );
+
+    const token =
+      localStorage.getItem("token");
+
+    const response = await fetch(
+      `${API_URL}/Update/upload`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formDataUpload,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Erro ao enviar logo"
+      );
+    }
+
+    const data =
+      await response.json();
+
+    return data.url;
+  };
 
   const loadCompany = async () => {
 
@@ -63,7 +100,7 @@ const CompanyProfile = () => {
         description: data.description || "",
         website: data.website || "",
         location: data.location || "",
-        logoUrl: data.logoUrl || "",
+        profileImage: data.profileImage || "",
 
         legalName: data.legalName || "",
         cnpj: data.cnpj || "",
@@ -91,40 +128,43 @@ const CompanyProfile = () => {
   };
 
   const handleUpdateCompany = async () => {
-
     try {
+      setUploadingLogo(true); // ← ativa o loading
 
       const userStr = localStorage.getItem("user");
-
       if (!userStr) return;
-
       const user = JSON.parse(userStr);
+
+      // ✅ Faz upload e pega a URL
+      let profileImageUrl = formData.profileImage;
+      if (selectedLogo) {
+        profileImageUrl = await uploadLogo();
+        if (!profileImageUrl) throw new Error("Falha no upload da logo");
+      }
 
       const response = await fetch(
         `${API_URL}/Company/${user.companyId}`,
         {
           method: "PUT",
-
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify(formData),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            profileImage: profileImageUrl, 
+          }),
         }
       );
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
 
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
-
+      setSelectedLogo(null);
       setOpenModal(false);
-
       loadCompany();
 
     } catch (err) {
       console.error(err);
+    } finally {
+      setUploadingLogo(false); // ← desativa o loading
     }
   };
 
@@ -163,14 +203,14 @@ const CompanyProfile = () => {
 
           <div className="company-profile__logo">
 
-            {company?.logoUrl ? (
-              <img
-                src={company.logoUrl}
-                alt="Logo da empresa"
-              />
-            ) : (
-              <Building2 size={52} />
-            )}
+            <img
+              src={
+                selectedLogo
+                  ? URL.createObjectURL(selectedLogo)
+                  : formData.profileImage
+              }
+              alt="Preview"
+            />
 
           </div>
 
@@ -415,14 +455,40 @@ const CompanyProfile = () => {
 
               <div className="company-modal__field">
 
-                <label>Logo URL</label>
+                <label>Logo da empresa</label>
 
                 <input
-                  type="text"
-                  name="logoUrl"
-                  value={formData.logoUrl}
-                  onChange={handleChange}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setSelectedLogo(
+                      e.target.files[0]
+                    )
+                  }
                 />
+
+                <div
+                  style={{
+                    marginTop: "10px",
+                  }}
+                >
+                  <img
+                    src={
+                      selectedLogo
+                        ? URL.createObjectURL(
+                          selectedLogo
+                        )
+                        : formData.logoUrl
+                    }
+                    alt="Preview"
+                    style={{
+                      width: "120px",
+                      height: "120px",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                    }}
+                  />
+                </div>
 
               </div>
 
@@ -452,8 +518,13 @@ const CompanyProfile = () => {
               <button
                 className="primary"
                 onClick={handleUpdateCompany}
+                disabled={uploadingLogo}
               >
-                Salvar alterações
+                {
+                  uploadingLogo
+                    ? "Enviando logo..."
+                    : "Salvar alterações"
+                }
               </button>
 
             </div>

@@ -20,9 +20,7 @@ import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
 
 import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
 import Vagas from "./Pages/company/Vagas/Vagas";
-import Candidatos from "./Pages/company/Candidatos/Candidatos";
 import Analytics from "./Pages/company/Analytics/Analytics";
-import MensagensCompany from "./Pages/company/MensagensCompany/MensagensCompany";
 import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
 
@@ -150,11 +148,6 @@ function AppRoutes() {
               <Route
                 path="feed"
                 element={<Feed />}
-              />
-
-              <Route
-                path="candidatos"
-                element={<Candidatos />}
               />
 
               <Route

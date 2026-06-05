@@ -19,26 +19,20 @@ export const ChatScreen = () => {
   const messagesEndRef = useRef(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  
-  // Pega as mensagens da conversa atual do dicionário
-  const currentMessages = currentConversation 
-    ? messages[currentConversation.id] || [] 
+
+  const currentMessages = currentConversation
+    ? messages[currentConversation.id] || []
     : [];
 
-  // Configurar listener para mensagens em tempo real
   useEffect(() => {
     chatService.onReceiveMessage((message) => {
       if (currentConversation?.id === message.conversationId) {
         addMessage(currentConversation.id, message);
       }
     });
-
-    return () => {
-      // Cleanup
-    };
+    return () => {};
   }, [addMessage, currentConversation]);
 
-  // Scroll automático para a última mensagem
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [currentMessages]);
@@ -55,14 +49,10 @@ export const ChatScreen = () => {
       await sendMessage(currentConversation.id, message);
     } catch (err) {
       console.error("Erro ao enviar mensagem:", err);
-      setInputValue(message); // Restaurar mensagem em caso de erro
+      setInputValue(message);
     } finally {
       setIsSending(false);
     }
-  };
-
-  const handleLeaveConversation = async () => {
-    await leaveConversation();
   };
 
   if (!currentConversation) {
@@ -82,6 +72,7 @@ export const ChatScreen = () => {
     <div className="chat-screen">
       <div className="chat-header">
         <div className="chat-user-info">
+          {/* Avatar do header */}
           {otherParticipant?.avatarUrl ? (
             <img src={otherParticipant.avatarUrl} alt="avatar" />
           ) : (
@@ -117,12 +108,19 @@ export const ChatScreen = () => {
                 key={message.id}
                 className={`message ${isOwnMessage ? "own" : "other"}`}
               >
+                {/* Avatar nas mensagens do outro — com fallback */}
                 {!isOwnMessage && (
-                  <img
-                    src={message.senderAvatarUrl}
-                    alt={message.senderName}
-                    className="message-avatar"
-                  />
+                  message.senderAvatarUrl ? (
+                    <img
+                      src={message.senderAvatarUrl}
+                      alt={message.senderName}
+                      className="message-avatar"
+                    />
+                  ) : (
+                    <div className="message-avatar avatar-placeholder">
+                      {message.senderName?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )
                 )}
                 <div className="message-content">
                   <div className="message-bubble">{message.content}</div>

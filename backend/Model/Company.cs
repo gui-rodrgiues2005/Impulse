@@ -8,7 +8,7 @@ public class Company
 
     public string? Website { get; set; }
 
-    public string? LogoUrl { get; set; }
+    public string? ProfileImage { get; set; }
 
     public string? Location { get; set; }
 

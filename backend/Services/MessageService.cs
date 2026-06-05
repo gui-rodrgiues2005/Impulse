@@ -19,12 +19,10 @@ namespace backend.Services
             if (string.IsNullOrWhiteSpace(content))
                 return null;
 
-            // Verificar se conversa existe
             var conversation = await _context.Conversations.FindAsync(conversationId);
             if (conversation == null)
                 return null;
 
-            // Verificar se usuário é participante
             var isParticipant = await _context.ConversationParticipants
                 .AnyAsync(cp => cp.ConversationId == conversationId && cp.UserId == senderId);
             if (!isParticipant)
@@ -40,9 +38,12 @@ namespace backend.Services
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            // Recarregar com dados do sender
+            // ✅ Include dos perfis para resolver o avatar corretamente
             var savedMessage = await _context.Messages
                 .Include(m => m.Sender)
+                    .ThenInclude(s => s.StudentProfile)
+                .Include(m => m.Sender)
+                    .ThenInclude(s => s.CompanyProfile)
                 .FirstOrDefaultAsync(m => m.Id == message.Id);
 
             return savedMessage != null ? MapMessageToDto(savedMessage) : null;
@@ -50,9 +51,13 @@ namespace backend.Services
 
         public async Task<List<MessageDto>> GetConversationMessagesAsync(Guid conversationId)
         {
+            // ✅ Include dos perfis para resolver o avatar corretamente
             var messages = await _context.Messages
                 .Where(m => m.ConversationId == conversationId)
                 .Include(m => m.Sender)
+                    .ThenInclude(s => s.StudentProfile)
+                .Include(m => m.Sender)
+                    .ThenInclude(s => s.CompanyProfile)
                 .OrderBy(m => m.SentAt)
                 .ToListAsync();
 
@@ -67,7 +72,11 @@ namespace backend.Services
                 ConversationId = message.ConversationId,
                 SenderId = message.SenderId,
                 SenderName = message.Sender?.Name ?? "Unknown",
-                SenderAvatarUrl = message.Sender?.AvatarUrl,
+                // ✅ Resolve pelo perfil correto, igual ao ConversationService
+                SenderAvatarUrl =
+                    message.Sender?.CompanyProfile?.ProfileImage
+                    ?? message.Sender?.StudentProfile?.ProfileImage
+                    ?? message.Sender?.AvatarUrl,
                 Content = message.Content,
                 SentAt = message.SentAt
             };

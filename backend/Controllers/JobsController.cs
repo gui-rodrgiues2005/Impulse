@@ -46,7 +46,7 @@ namespace backend.Controllers
                 {
                     j.Company.Id,
                     j.Company.Name,
-                    j.Company.LogoUrl,
+                    j.Company.ProfileImage,
                     j.Company.Location
                 }
             }));
@@ -81,7 +81,7 @@ namespace backend.Controllers
                 {
                     job.Company.Id,
                     job.Company.Name,
-                    job.Company.LogoUrl,
+                    job.Company.ProfileImage,
                     job.Company.Location,
                     job.Company.Description
                 }

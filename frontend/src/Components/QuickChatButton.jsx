@@ -3,11 +3,17 @@ import { useChatWidget } from "./ChatWidgetManager";
 import { MessageCircle } from "lucide-react";
 import "../styles/QuickChatButton.scss";
 
-export const QuickChatButton = ({ userId, userName, avatarUrl }) => {
+export const QuickChatButton = ({
+  userId,
+  userName,
+  avatarUrl,
+}) => {
   const { openChat } = useChatWidget();
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Não permitir chat consigo mesmo
+  const user = JSON.parse(
+    localStorage.getItem("user") || "{}"
+  );
+
   if (user.id === userId) {
     return null;
   }
@@ -16,15 +22,18 @@ export const QuickChatButton = ({ userId, userName, avatarUrl }) => {
     openChat(userId, {
       id: userId,
       name: userName,
-      email: "", // Você pode adicionar email se necessário
-      avatarUrl: avatarUrl,
+      avatarUrl,
     });
   };
 
   return (
-    <button className="quick-chat-btn" onClick={handleClick} title="Enviar mensagem">
+    <button
+      className="quick-chat-btn"
+      onClick={handleClick}
+      title="Enviar mensagem"
+    >
       <MessageCircle size={18} />
-      <span>Mensagem</span>
+      <span className="btn-text">Enviar Mensagem</span>
     </button>
   );
 };
