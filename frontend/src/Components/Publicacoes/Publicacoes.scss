@@ -1,291 +1,330 @@
 .publicar-atividade {
   width: 100%;
   min-height: 100vh;
+  padding: 40px 20px;
+  background: #f8fafc; // Tom levemente mais moderno/clean
+  display: flex;
+  justify-content: center; // Alinha horizontalmente no centro da tela
+  align-items: flex-start; 
+}
 
-  padding: 32px;
-
-  background: #f5f7fa;
+.container-wrapper {
+  width: 100%;
+  max-width: 740px; // Largura ideal e elegante para formulários centralizados
+  display: flex;
+  flex-direction: column;
 }
 
 .atividade-header {
-  margin-bottom: 28px;
-}
+  margin-bottom: 24px;
+  text-align: left;
 
-.atividade-header h1 {
-  font-size: 38px;
-  font-weight: 700;
+  h1 {
+    font-size: 30px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
 
-  color: #101828;
-
-  margin-bottom: 8px;
-}
-
-.atividade-header p {
-  font-size: 17px;
-
-  color: #667085;
+  p {
+    font-size: 15px;
+    color: #64748b;
+  }
 }
 
 .atividade-card {
   width: 100%;
-  max-width: 900px;
-
   background: #ffffff;
-
-  border-radius: 22px;
-
-  padding: 40px;
-
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 24px;
 }
 
+// Upload Box & Preview Refatorado
 .upload-box {
   width: 100%;
-  height: 380px;
-
-  border: 2px dashed #d0d5dd;
-  border-radius: 20px;
-
+  min-height: 180px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 
-  transition: 0.2s ease;
-}
+  &:hover {
+    border-color: #2d5d9f;
+    background: #f0f7ff;
+    .upload-icon { color: #2d5d9f; }
+  }
 
-.upload-box:hover {
-  border-color: #2d5d9f;
-  background: #f8fbff;
+  &.has-preview {
+    border-style: solid;
+    border-color: #e2e8f0;
+    padding: 0;
+  }
 }
 
 .upload-content {
-  width: 100%;
-  height: 100%;
-
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-
   text-align: center;
+  color: #64748b;
 
-  color: #667085;
+  .upload-icon {
+    color: #94a3b8;
+    transition: color 0.2s;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #334155;
+    margin: 12px 0 4px 0;
+  }
+
+  span {
+    font-size: 13px;
+    color: #94a3b8;
+  }
 }
 
-.upload-content h3 {
-  font-size: 24px;
-  font-weight: 500;
+.preview-container {
+  width: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  background: #f8fafc;
 
-  margin-top: 18px;
-  margin-bottom: 8px;
+  img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+  }
+
+  .remove-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #fff;
+    border: none;
+    padding: 6px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.9); // Fica vermelho no hover
+    }
+  }
 }
 
-.upload-content span {
-  font-size: 16px;
+// Inputs e Linhas Dinâmicas
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
+  gap: 8px;
 
-.form-group label {
-  font-size: 17px;
-  font-weight: 600;
-
-  color: #101828;
-}
-
-.helper-text {
-  font-size: 14px;
-
-  color: #667085;
+  label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #334155;
+    
+    .optional {
+      font-weight: 400;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+  }
 }
 
 input,
 textarea,
 select {
   width: 100%;
-
-  border: 1px solid #d0d5dd;
-  border-radius: 14px;
-
-  padding: 16px 18px;
-
-  font-size: 16px;
-
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #0f172a;
   background: #ffffff;
-
   outline: none;
+  transition: all 0.15s ease-in-out;
 
-  transition: 0.2s ease;
-}
+  &::placeholder {
+    color: #94a3b8;
+  }
 
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #2d5d9f;
-  box-shadow: 0 0 0 4px rgba(45, 93, 159, 0.08);
+  &:focus {
+    border-color: #2d5d9f;
+    box-shadow: 0 0 0 3px rgba(45, 93, 159, 0.12);
+  }
 }
 
 textarea {
-  min-height: 160px;
-
+  min-height: 120px;
   resize: vertical;
 }
 
 .select-wrapper {
   position: relative;
-}
 
-.select-wrapper svg {
-  position: absolute;
-
-  right: 18px;
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  color: #667085;
-
-  pointer-events: none;
+  svg {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+  }
 }
 
 select {
   appearance: none;
+  padding-right: 40px;
 }
 
+// Grid de Tags/Habilidades
 .skills-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .skill {
-  border: 1px solid #d0d5dd;
-
-  background: #f9fafb;
-
-  color: #344054;
-
-  border-radius: 999px;
-
-  padding: 10px 16px;
-
-  font-size: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
   font-weight: 500;
-
   cursor: pointer;
+  transition: all 0.15s ease;
 
-  transition: 0.2s ease;
+  &:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  &.active {
+    background: #2d5d9f;
+    color: #ffffff;
+    border-color: #2d5d9f;
+  }
 }
 
-.skill:hover {
-  background: #eef4ff;
-  border-color: #2d5d9f;
-}
-
-.skill.active {
-  background: #2d5d9f;
-  color: #ffffff;
-  border-color: #2d5d9f;
-}
-
+// Opções de Visibilidade em Cards Lado a Lado
 .visibility-options {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .visibility-card {
-  border: 1px solid #d0d5dd;
-
-  border-radius: 16px;
-
-  padding: 18px;
-
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-
+  gap: 12px;
   cursor: pointer;
+  transition: all 0.15s ease;
 
-  transition: 0.2s ease;
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+
+  &.selected {
+    border-color: #2d5d9f;
+    background: #f4f8ff;
+  }
+
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+    accent-color: #2d5d9f;
+    cursor: pointer;
+  }
 }
 
-.visibility-card:hover {
-  border-color: #2d5d9f;
-  background: #f8fbff;
+.visibility-text {
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+
+  p {
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.4;
+  }
 }
 
-.visibility-card input {
-  width: 18px;
-  height: 18px;
-
-  margin-top: 2px;
-}
-
-.visibility-card h4 {
-  font-size: 16px;
-  font-weight: 600;
-
-  color: #101828;
-
-  margin-bottom: 4px;
-}
-
-.visibility-card p {
-  font-size: 14px;
-
-  color: #667085;
-}
-
+// Botão de Submissão Principal
 .publish-button {
   width: 100%;
-
   border: none;
-
   background: #2d5d9f;
-
   color: #ffffff;
-
-  padding: 18px;
-
-  border-radius: 16px;
-
-  font-size: 17px;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 600;
-
   cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
 
-  transition: 0.2s ease;
+  &:hover {
+    background: #22477a;
+  }
+
+  &:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
 }
 
-.publish-button:hover {
-  opacity: 0.92;
-}
-
-@media (max-width: 768px) {
+// Responsividade Otimizada
+@media (max-width: 640px) {
   .publicar-atividade {
-    padding: 18px;
+    padding: 16px 12px;
   }
 
   .atividade-card {
-    padding: 24px;
+    padding: 20px;
+    gap: 20px;
   }
 
-  .upload-box {
-    height: 260px;
+  .form-row,
+  .visibility-options {
+    grid-template-columns: 1fr; // Quebra para uma coluna no celular
   }
 
   .atividade-header h1 {
-    font-size: 28px;
-  }
-
-  .upload-content h3 {
-    font-size: 18px;
+    font-size: 24px;
   }
 }

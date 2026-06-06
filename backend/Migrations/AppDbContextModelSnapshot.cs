@@ -162,11 +162,11 @@ namespace backend.Migrations
                     b.Property<string>("Location")
                         .HasColumnType("text");
 
-                    b.Property<string>("LogoUrl")
-                        .HasColumnType("text");
-
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProfileImage")
                         .HasColumnType("text");
 
                     b.Property<string>("Sector")
@@ -180,7 +180,8 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Companies");
                 });
@@ -312,6 +313,35 @@ namespace backend.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("backend.Models.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("backend.Models.ConversationParticipant", b =>
+                {
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ConversationId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ConversationParticipants");
+                });
+
             modelBuilder.Entity("backend.Models.FeedPost", b =>
                 {
                     b.Property<Guid>("Id")
@@ -433,6 +463,34 @@ namespace backend.Migrations
                     b.ToTable("JobApplications");
                 });
 
+            modelBuilder.Entity("backend.Models.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("backend.Models.Notification", b =>
                 {
                     b.Property<Guid>("Id")
@@ -467,6 +525,50 @@ namespace backend.Migrations
                     b.HasIndex("StudentUserId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("backend.Models.Trajectory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("FeedPostId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsOngoing")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FeedPostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Trajectories");
                 });
 
             modelBuilder.Entity("API.Models.SavedTalent", b =>
@@ -525,8 +627,8 @@ namespace backend.Migrations
             modelBuilder.Entity("Company", b =>
                 {
                     b.HasOne("User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("CompanyProfile")
+                        .HasForeignKey("Company", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -559,6 +661,25 @@ namespace backend.Migrations
                         .HasForeignKey("StudentProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.ConversationParticipant", b =>
+                {
+                    b.HasOne("backend.Models.Conversation", "Conversation")
+                        .WithMany("Participants")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", "User")
+                        .WithMany("ConversationParticipants")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
 
                     b.Navigation("User");
                 });
@@ -604,6 +725,25 @@ namespace backend.Migrations
                     b.Navigation("StudentUser");
                 });
 
+            modelBuilder.Entity("backend.Models.Message", b =>
+                {
+                    b.HasOne("backend.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", "Sender")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("backend.Models.Notification", b =>
                 {
                     b.HasOne("Company", "Company")
@@ -631,6 +771,24 @@ namespace backend.Migrations
                     b.Navigation("StudentUser");
                 });
 
+            modelBuilder.Entity("backend.Models.Trajectory", b =>
+                {
+                    b.HasOne("backend.Models.FeedPost", "FeedPost")
+                        .WithMany()
+                        .HasForeignKey("FeedPostId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FeedPost");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("API.Models.Talent", b =>
                 {
                     b.Navigation("Skills");
@@ -648,13 +806,26 @@ namespace backend.Migrations
 
             modelBuilder.Entity("User", b =>
                 {
+                    b.Navigation("CompanyProfile");
+
+                    b.Navigation("ConversationParticipants");
+
                     b.Navigation("SavedTalents");
+
+                    b.Navigation("SentMessages");
 
                     b.Navigation("Skills");
 
                     b.Navigation("StudentProfile");
 
                     b.Navigation("Talents");
+                });
+
+            modelBuilder.Entity("backend.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
+
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("backend.Models.FeedPost", b =>

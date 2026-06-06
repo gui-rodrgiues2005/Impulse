@@ -1,0 +1,39 @@
+.chat-page {
+  display: flex;
+  height: calc(100vh - 60px); // Ajustar conforme a altura da navbar
+
+  .chat-layout {
+    display: flex;
+    width: 100%;
+    gap: 0;
+
+    .chat-sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+
+      @media (max-width: 768px) {
+        width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        z-index: 10;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .chat-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+
+      @media (max-width: 768px) {
+        width: 100%;
+      }
+    }
+  }
+}

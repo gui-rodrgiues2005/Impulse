@@ -39,7 +39,7 @@ namespace backend.Controllers
                 company.Name,
                 company.Description,
                 company.Website,
-                company.LogoUrl,
+                company.ProfileImage,
                 company.Location,
 
                 company.LegalName,
@@ -68,7 +68,7 @@ namespace backend.Controllers
             company.Description = dto.Description;
             company.Website = dto.Website;
             company.Location = dto.Location;
-            company.LogoUrl = dto.LogoUrl;
+            company.ProfileImage = dto.ProfileImage;
             company.LegalName = dto.LegalName;
             company.Cnpj = dto.Cnpj;
             company.Sector = dto.Sector;

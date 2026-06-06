@@ -22,9 +22,11 @@ namespace backend.Data
         public DbSet<SavedTalent> SavedTalents { get; set; }
         public DbSet<FeedPost> FeedPosts { get; set; }
         public DbSet<Skill> Skills { get; set; }
+        public DbSet<Trajectory> Trajectories { get; set; }
 
         // ACTIVITIES
         public DbSet<Activity> Activities { get; set; }
+
 
         // TAGS
         public DbSet<Tag> Tags { get; set; }
@@ -33,6 +35,11 @@ namespace backend.Data
         // CANDIDATURAS E NOTIFICAÇÕES
         public DbSet<JobApplication> JobApplications { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+
+        // CHAT
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -82,6 +89,23 @@ namespace backend.Data
                 .HasForeignKey(x => x.StudentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+
+            modelBuilder.Entity<Trajectory>(entity =>
+            {
+                entity.HasKey(t => t.Id);
+
+                entity.HasOne(t => t.User)
+                    .WithMany() // ou .WithMany(u => u.Trajectories) se quiser navegação
+                    .HasForeignKey(t => t.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(t => t.FeedPost)
+                    .WithMany()
+                    .HasForeignKey(t => t.FeedPostId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .IsRequired(false);
+            });
+
             // =========================================
             // COMPANY -> USER (1:1)
             // =========================================
@@ -92,6 +116,11 @@ namespace backend.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // AppDbContext.cs
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.CompanyProfile)
+                .WithOne(c => c.User)
+                .HasForeignKey<Company>(c => c.UserId);
             // =========================================
             // JOB APPLICATION (N:N — Aluno x Vaga)
             // =========================================
@@ -133,6 +162,41 @@ namespace backend.Data
                 .HasOne(n => n.StudentUser)
                 .WithMany()
                 .HasForeignKey(n => n.StudentUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================================
+            // CONVERSATION PARTICIPANT (N:N)
+            // =========================================
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasKey(cp => new { cp.ConversationId, cp.UserId });
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasOne(cp => cp.Conversation)
+                .WithMany(c => c.Participants)
+                .HasForeignKey(cp => cp.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ConversationParticipant>()
+                .HasOne(cp => cp.User)
+                .WithMany(u => u.ConversationParticipants)
+                .HasForeignKey(cp => cp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================================
+            // MESSAGE
+            // =========================================
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Conversation)
+                .WithMany(c => c.Messages)
+                .HasForeignKey(m => m.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.Sender)
+                .WithMany(u => u.SentMessages)
+                .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
