@@ -25,53 +25,47 @@ namespace backend.Controllers
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
-            var userId = User.FindFirst(
-                ClaimTypes.NameIdentifier
-            )?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var student = await _context.StudentProfiles
-                .FirstOrDefaultAsync(s =>
-                    s.UserId.ToString() == userId
-                );
+                .Include(s => s.User)
+                .ThenInclude(u => u.Skills)
+                .FirstOrDefaultAsync(s => s.UserId.ToString() == userId);
 
             if (student == null)
-            {
                 return NotFound();
-            }
 
-            return Ok(student);
+            return Ok(new
+            {
+                student.Id,
+                student.UserId,
+                student.Bio,
+                student.Course,
+                student.ProfileImage,
+                student.Linkedin,
+                student.Github,
+                student.University,
+                student.Location,
+                Skills = student.User.Skills.Select(s => s.Name).ToList()
+            });
         }
-
 
         [Authorize]
         [HttpPut("profile")]
-        public async Task<IActionResult> UpdateProfile(
-         [FromBody] UpdateStudentDto dto
-     )
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateStudentDto dto)
         {
-            var userId = User.FindFirst(
-                ClaimTypes.NameIdentifier
-            )?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
-            {
                 return Unauthorized();
-            }
 
             var student = await _context.StudentProfiles
-       .Include(s => s.User)
-       .ThenInclude(u => u.Skills)
-       .FirstOrDefaultAsync(s =>
-           s.UserId.ToString() == userId
-       );
+                .Include(s => s.User)
+                .ThenInclude(u => u.Skills)
+                .FirstOrDefaultAsync(s => s.UserId.ToString() == userId);
 
             if (student == null)
-            {
-                return NotFound(new
-                {
-                    message = "Perfil não encontrado."
-                });
-            }
+                return NotFound(new { message = "Perfil não encontrado." });
 
             student.Bio = dto.Bio;
             student.Course = dto.Course;
@@ -80,6 +74,13 @@ namespace backend.Controllers
             student.Github = dto.Github;
             student.University = dto.University;
             student.Location = dto.Location;
+
+            // <- essas linhas estavam faltando:
+            student.User.Skills.Clear();
+            foreach (var skillName in dto.Skills)
+            {
+                student.User.Skills.Add(new Skill { Name = skillName });
+            }
 
             await _context.SaveChangesAsync();
 
@@ -93,12 +94,8 @@ namespace backend.Controllers
                 student.Github,
                 student.University,
                 student.Location,
-
                 Name = student.User.Name,
-
-                Skills = student.User.Skills
-              .Select(s => s.Name)
-              .ToList()
+                Skills = student.User.Skills.Select(s => s.Name).ToList()
             });
         }
 
@@ -130,6 +127,7 @@ namespace backend.Controllers
                 student.Github,
                 student.University,
                 student.Location,
+                student.ResumoUrl,
 
                 Skills = student.User.Skills
            .Select(s => s.Name)

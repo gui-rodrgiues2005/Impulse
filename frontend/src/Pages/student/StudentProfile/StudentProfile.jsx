@@ -48,10 +48,14 @@ export default function StudentProfile() {
     github: "",
     university: "",
     location: "",
+    resumoUrl: "",
   });
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [skillsInput, setSkillsInput] = useState("");
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [newSkillsInput, setNewSkillsInput] = useState("");
   const [editForm, setEditForm] = useState({
     bio: "",
     course: "",
@@ -62,6 +66,7 @@ export default function StudentProfile() {
     location: "",
     skills: [],
   });
+
 
   // ── Trajetória ───────────────────────────────────────────
   const [trajectories, setTrajectories] = useState([]);
@@ -79,6 +84,7 @@ export default function StudentProfile() {
   const [trajectoryMenuOpen, setTrajectoryMenuOpen] = useState(null);
   const menuRef = useRef(null);
   // ────────────────────────────────────────────────────────
+  const [resumeUrl, setResumeUrl] = useState(null);
 
   useEffect(() => {
     profileUser();
@@ -106,6 +112,7 @@ export default function StudentProfile() {
       if (!response.ok) throw new Error("Erro ao carregar perfil");
       const data = await response.json();
       setStudentProfile(data);
+      setResumeUrl(data.resumeUrl || null); // <- adiciona isso
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
     }
@@ -150,6 +157,7 @@ export default function StudentProfile() {
       location: studentProfile.location || "",
       skills: studentProfile.skills || [],
     });
+    setSkillsInput((studentProfile.skills || []).join(", ")); // <- só essa linha
     setShowEditModal(true);
   };
 
@@ -163,6 +171,8 @@ export default function StudentProfile() {
         profileImageUrl = await uploadProfileImage();
         setUploadingImage(false);
       }
+
+      console.log("Enviando:", { ...editForm, profileImage: profileImageUrl }); // <- aqui
 
       const response = await fetch(`${API_URL}/Student/profile`, {
         method: "PUT",
@@ -181,6 +191,51 @@ export default function StudentProfile() {
     } catch (error) {
       setUploadingImage(false);
       console.error("Erro ao salvar perfil:", error);
+    }
+  };
+
+  const handleUploadResume = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/Update/resume`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (response.ok) {
+      alert("Currículo enviado com sucesso!");
+    }
+  };
+
+
+  const handleSaveSkills = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const newSkills = newSkillsInput.split(",").map((s) => s.trim()).filter(Boolean);
+      const mergedSkills = [...new Set([...(studentProfile.skills || []), ...newSkills])];
+
+      const response = await fetch(`${API_URL}/Student/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...studentProfile, skills: mergedSkills }),
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      await profileUser();
+      setNewSkillsInput("");
+      setShowSkillsModal(false);
+    } catch (error) {
+      console.error("Erro ao salvar habilidades:", error);
     }
   };
 
@@ -296,74 +351,65 @@ export default function StudentProfile() {
 
   const handleNavPublicar = () => navigate("/student/publicar");
 
+  const formatUrl = (url) => {
+    if (!url) return "";
+    return url.startsWith("http") ? url : `https://${url}`;
+  };
+
+  console.log("Perfil do estudante:", studentProfile); // <- log para debug
+
   return (
     <div className="student-profile">
       {/* HEADER */}
       <div className="student-profile__header">
-        <div className="student-profile__cover" />
+        <div className="student-profile__cover">
+          <div className="student-profile__cover-pattern" />
+        </div>
+
         <div className="student-profile__top">
           <div className="student-profile__avatar">
             <img src={studentProfile.profileImage} alt={user?.name} />
           </div>
-          <span className="student-profile__badge">
-            <GraduationCap size={14} />
-            Conta de Estudante
-          </span>
         </div>
 
         <div className="student-profile__info">
-          <div>
-            <h1>{user?.name}</h1>
+          <div className="student-profile__info-main">
+            <div className="student-profile__name-row">
+              <h1>{user?.name}</h1>
+            </div>
             <p className="student-profile__course">
               {studentProfile.course || "Curso não informado"}
+              {studentProfile.university && (
+                <span className="student-profile__university-inline">
+                  &nbsp;·&nbsp;{studentProfile.university}
+                </span>
+              )}
             </p>
             <p className="student-profile__bio">
               {studentProfile.bio || "Adicione uma descrição para que recrutadores conheçam melhor seu perfil."}
             </p>
-            <div className="student-profile__education">
-              <GraduationCap size={18} />
-              <div>
-                <strong>{studentProfile.university || "Universidade não informada"}</strong>
-                <span>Formação Acadêmica</span>
-              </div>
-            </div>
+
             <div className="student-profile__meta">
-              <span><MapPin size={16} />{studentProfile.location || "Localização não informada"}</span>
-              <span>
-                <CalendarDays size={16} />
-                Membro desde{" "}
-                {user?.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
-                  : "-"}
-              </span>
+              <span><MapPin size={14} />{studentProfile.location || "Localização não informada"}</span>
             </div>
+
             <div className="student-profile__links-inline">
               {studentProfile.linkedin && (
-                <a href={studentProfile.linkedin} target="_blank" rel="noreferrer">
-                  <ExternalLink size={16} />LinkedIn
+                <a href={formatUrl(studentProfile.linkedin)} target="_blank" rel="noreferrer" className="link-pill link-pill--linkedin">
+                  <ExternalLink size={13} />LinkedIn
                 </a>
               )}
               {studentProfile.github && (
-                <a href={studentProfile.github} target="_blank" rel="noreferrer">
-                  <ExternalLink size={16} />GitHub
+                <a href={formatUrl(studentProfile.github)} target="_blank" rel="noreferrer" className="link-pill link-pill--github">
+                  <ExternalLink size={13} />GitHub
                 </a>
               )}
             </div>
           </div>
-          <button className="student-profile__edit" onClick={handleOpenEdit}>
-            <Pencil size={18} />Editar Perfil
-          </button>
-        </div>
 
-        <div className="student-profile__stats">
-          <div><strong>{userPosts.length}</strong><span>Publicações</span></div>
-          <div><strong>{studentProfile.skills?.length || 0}</strong><span>Habilidades</span></div>
-          <div>
-            <strong className="highlight">
-              {studentProfile.university && studentProfile.course && studentProfile.location ? "100%" : "70%"}
-            </strong>
-            <span>Perfil Completo</span>
-          </div>
+          <button className="student-profile__edit" onClick={handleOpenEdit}>
+            <Pencil size={15} />Editar Perfil
+          </button>
         </div>
       </div>
 
@@ -373,29 +419,41 @@ export default function StudentProfile() {
           {studentProfile.bio || "Nenhuma descrição adicionada."}
         </p>
       </div>
-
       {/* CARDS */}
+
       <div className="student-profile__cards">
-        <div className="student-profile__card">
-          <div className="student-profile__card-header">
-            <h3>Perfil completo</h3>
-            <span>78%</span>
-          </div>
-          <div className="student-profile__progress">
-            <div className="student-profile__progress-fill" style={{ width: "78%" }} />
-          </div>
-          <p>Adicione seu currículo para completar o perfil.</p>
-        </div>
-        <div className="student-profile__card">
+        <div className="student-profile__card student-profile__card--cv">
           <div className="student-profile__cv">
-            <div>
-              <FileText size={22} />
-              <div>
-                <h3>Currículo</h3>
-                <p>Envie seu CV em PDF para recrutadores.</p>
-              </div>
+            <div className="cv-icon">
+              <FileText size={18} />
             </div>
-            <button>Upload de Currículo</button>
+            <div className="cv-info">
+              <h3>Currículo</h3>
+              <p>
+                {resumeUrl
+                  ? "Currículo enviado e visível para recrutadores."
+                  : "Envie seu CV em PDF para recrutadores visualizarem seu perfil."}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {resumeUrl && (
+                <a href={resumeUrl} target="_blank" rel="noreferrer" className="cv-view-btn">
+                  <ExternalLink size={14} />
+                  Ver
+                </a>
+              )}
+              <button onClick={() => document.getElementById("resume-input").click()}>
+                <Plus size={14} />
+                {resumeUrl ? "Atualizar" : "Upload"}
+              </button>
+            </div>
+            <input
+              id="resume-input"
+              type="file"
+              accept=".pdf"
+              style={{ display: "none" }}
+              onChange={handleUploadResume}
+            />
           </div>
         </div>
       </div>
@@ -404,7 +462,9 @@ export default function StudentProfile() {
       <div className="student-profile__section">
         <div className="student-profile__section-header">
           <h2>Habilidades</h2>
-          <button><Plus size={18} />Adicionar</button>
+          <button onClick={() => { setNewSkillsInput(""); setShowSkillsModal(true); }}>
+            <Plus size={18} />Adicionar
+          </button>
         </div>
         <div className="student-profile__skills">
           {studentProfile.skills?.map((skill) => (
@@ -415,14 +475,42 @@ export default function StudentProfile() {
         </div>
       </div>
 
-      {/* LINKS */}
-      <div className="student-profile__section">
-        <h2>Links</h2>
-        <div className="student-profile__links">
-          <a href="/"><ExternalLink size={18} />Portfólio</a>
-          <a href="/"><ExternalLink size={18} />LinkedIn</a>
+      {/* MODAL HABILIDADES */}
+      {showSkillsModal && (
+        <div className="student-profile__modal-overlay">
+          <div className="student-profile__modal">
+            <div className="student-profile__modal-header">
+              <h2>Adicionar Habilidades</h2>
+              <button onClick={() => setShowSkillsModal(false)}><X size={20} /></button>
+            </div>
+            <div className="student-profile__modal-body">
+              <div className="student-profile__form-group">
+                <label>Habilidades (separadas por vírgula)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: React, Node.js, SQL..."
+                  value={newSkillsInput}
+                  onChange={(e) => setNewSkillsInput(e.target.value)}
+                />
+                {/* Preview das skills que serão adicionadas */}
+                {newSkillsInput && (
+                  <div className="student-profile__skills" style={{ marginTop: "12px" }}>
+                    {newSkillsInput.split(",").map((s) => s.trim()).filter(Boolean).map((s) => (
+                      <span key={s}>{s}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="student-profile__modal-footer">
+              <button className="cancel" onClick={() => setShowSkillsModal(false)}>Cancelar</button>
+              <button className="save" onClick={handleSaveSkills}>
+                <Save size={18} />Salvar
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* PUBLICAÇÕES */}
       <div className="student-profile__section">
@@ -561,20 +649,22 @@ export default function StudentProfile() {
                   onChange={(e) => setEditForm({ ...editForm, linkedin: e.target.value })} />
               </div>
               <div className="student-profile__form-group">
-                <label>GitHub</label>
+                <label>Portifólio</label>
                 <input type="text" value={editForm.github}
                   onChange={(e) => setEditForm({ ...editForm, github: e.target.value })} />
               </div>
               <div className="student-profile__form-group">
-                <label>Habilidades</label>
-                <input type="text" placeholder="React, C#, SQL..."
-                  value={editForm.skills.join(", ")}
-                  onChange={(e) =>
+                <label>Principais Competências</label>
+                <input type="text" placeholder="Ex: Trabalho em equipo, Resolução de Problemas, Comunicação"
+                  value={skillsInput}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setSkillsInput(raw);
                     setEditForm({
                       ...editForm,
-                      skills: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
-                    })
-                  }
+                      skills: raw.split(",").map((s) => s.trim()).filter(Boolean),
+                    });
+                  }}
                 />
               </div>
               <div className="student-profile__form-group">
