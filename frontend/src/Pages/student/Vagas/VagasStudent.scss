@@ -236,6 +236,10 @@
   }
 }
 
+// =========================================
+// BOTÃO DE CANDIDATURA
+// =========================================
+
 .btn-candidatar {
   padding: 12px 24px;
   background: linear-gradient(135deg, #2ca3ab, #239097);
@@ -256,6 +260,27 @@
   &:active {
     transform: translateY(0);
   }
+
+  // Candidatura já enviada — verde
+  &--done {
+    background: #22c55e !important;
+    cursor: default;
+    opacity: 0.9;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  // Erro na candidatura — vermelho
+  &--error {
+    background: #ef4444 !important;
+  }
+
+  // Desabilitado
+  &:disabled {
+    cursor: not-allowed;
+  }
 }
 
 .vagas-resultado {
@@ -264,6 +289,93 @@
   color: #667085;
   font-size: 14px;
 }
+
+// =========================================
+// MODAL DE ORIGEM DA CANDIDATURA
+// =========================================
+
+.source-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.source-modal {
+  background: white;
+  border-radius: 18px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+    }
+
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: 8px;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.88rem;
+    color: #6b7280;
+    margin-bottom: 20px;
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__option {
+    height: 50px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: 0.2s;
+
+    &:hover {
+      border-color: #2ca3ab;
+      background: #f0fafa;
+      color: #2ca3ab;
+      font-weight: 600;
+    }
+  }
+}
+
+// =========================================
+// RESPONSIVO
+// =========================================
 
 @media (max-width: 768px) {
   .vagas-container {
@@ -321,19 +433,9 @@
     width: 100%;
     align-self: stretch;
   }
-  .btn-candidatar {
-  &--done {
-    background: #22c55e !important;
-    cursor: default;
-    opacity: 0.9;
-  }
 
-  &--error {
-    background: #ef4444 !important;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-   }
+  .source-modal {
+    margin: 16px;
+    padding: 20px;
   }
 }

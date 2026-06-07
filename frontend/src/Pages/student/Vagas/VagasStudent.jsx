@@ -6,18 +6,48 @@ import {
   Building2,
   Calendar,
   Users,
+  X,
 } from 'lucide-react';
 import API_URL from '../../../service/api';
 
 const VagasStudent = () => {
+
+  // =========================================
+  // ESTADOS
+  // =========================================
+
+  // Lista de vagas disponíveis
   const [vagas, setVagas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Filtros de busca
   const [filtroArea, setFiltroArea] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroLocalizacao, setFiltroLocalizacao] = useState('');
-  const [candidaturas, setCandidaturas] = useState({}); // { [jobId]: 'idle' | 'loading' | 'done' | 'error' }
 
+  // Status de cada candidatura { [jobId]: 'idle' | 'loading' | 'done' | 'error' }
+  const [candidaturas, setCandidaturas] = useState({});
+
+  // Controla se o modal de origem está aberto
+  const [sourceModal, setSourceModal] = useState(false);
+
+  // Vaga selecionada para candidatura
+  const [vagaSelecionada, setVagaSelecionada] = useState(null);
+
+  // Opções de origem da candidatura
+  const sourceOptions = [
+    { value: "Plataforma", label: "🖥️ Plataforma" },
+    { value: "LinkedIn", label: "💼 LinkedIn" },
+    { value: "Indicação", label: "🤝 Indicação" },
+    { value: "Outros", label: "🔍 Outros" },
+  ];
+
+  // =========================================
+  // FUNÇÕES
+  // =========================================
+
+  // Busca todas as vagas disponíveis ao montar o componente
   useEffect(() => {
     fetchVagas();
   }, []);
@@ -26,7 +56,6 @@ const VagasStudent = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
       const response = await fetch(`${API_URL}/jobs`, {
         method: 'GET',
         headers: {
@@ -34,9 +63,7 @@ const VagasStudent = () => {
           'Content-Type': 'application/json',
         },
       });
-
       if (!response.ok) throw new Error('Erro ao buscar vagas');
-
       const data = await response.json();
       setVagas(data);
       setError(null);
@@ -48,24 +75,37 @@ const VagasStudent = () => {
     }
   };
 
-  const handleCandidatar = async (vagaId) => {
+  // Abre o modal de origem ao clicar em "Candidatar-se"
+  const handleAbrirModal = (vaga) => {
+    setVagaSelecionada(vaga);
+    setSourceModal(true);
+  };
+
+  // Envia a candidatura com a origem selecionada
+  const handleCandidatar = async (source) => {
+    if (!vagaSelecionada) return;
+
+    const vagaId = vagaSelecionada.id;
+
+    // Fecha o modal e marca como loading
+    setSourceModal(false);
     setCandidaturas((prev) => ({ ...prev, [vagaId]: 'loading' }));
 
     try {
       const token = localStorage.getItem('token');
-
       const response = await fetch(`${API_URL}/jobs/${vagaId}/apply`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ source }), // Envia a origem da candidatura
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Já se candidatou
+        // Já se candidatou anteriormente
         if (response.status === 400) {
           setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
           return;
@@ -73,9 +113,8 @@ const VagasStudent = () => {
         throw new Error(data.message || 'Erro ao se candidatar');
       }
 
+      // Marca como concluído e atualiza contador localmente
       setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
-
-      // Atualiza o contador de candidatos na vaga localmente
       setVagas((prev) =>
         prev.map((v) =>
           v.id === vagaId ? { ...v, candidates: v.candidates + 1 } : v
@@ -83,10 +122,11 @@ const VagasStudent = () => {
       );
     } catch (err) {
       console.error('Erro ao se candidatar:', err);
-      setCandidaturas((prev) => ({ ...prev, [vagaId]: 'error' }));
+      setCandidaturas((prev) => ({ ...prev, [vagaSelecionada.id]: 'error' }));
     }
   };
 
+  // Filtra vagas por área, tipo e localização
   const vagasFiltradas = vagas.filter((vaga) => {
     return (
       (!filtroArea || vaga.area.toLowerCase().includes(filtroArea.toLowerCase())) &&
@@ -95,10 +135,10 @@ const VagasStudent = () => {
     );
   });
 
-  const formatarData = (data) => {
-    return new Date(data).toLocaleDateString('pt-BR');
-  };
+  // Formata a data para o padrão brasileiro
+  const formatarData = (data) => new Date(data).toLocaleDateString('pt-BR');
 
+  // Retorna o label do botão de candidatura baseado no status
   const getBtnLabel = (vagaId) => {
     const status = candidaturas[vagaId];
     if (status === 'loading') return 'Enviando...';
@@ -107,6 +147,7 @@ const VagasStudent = () => {
     return 'Candidatar-se';
   };
 
+  // Desabilita o botão se estiver carregando ou já candidatado
   const getBtnDisabled = (vagaId) => {
     const status = candidaturas[vagaId];
     return status === 'loading' || status === 'done';
@@ -116,14 +157,21 @@ const VagasStudent = () => {
     return <div className="vagas-container"><p>Carregando vagas...</p></div>;
   }
 
+  // =========================================
+  // RENDER
+  // =========================================
+
   return (
     <div className="vagas-container">
+
+      {/* CABEÇALHO */}
       <div className="vagas-header">
         <span>OPORTUNIDADES</span>
         <h1>Vagas Disponíveis</h1>
         <p>Explore as melhores oportunidades de estágio e primeiro emprego</p>
       </div>
 
+      {/* FILTROS */}
       <div className="vagas-filtros">
         <div className="filtro-item">
           <label>Área</label>
@@ -134,7 +182,6 @@ const VagasStudent = () => {
             onChange={(e) => setFiltroArea(e.target.value)}
           />
         </div>
-
         <div className="filtro-item">
           <label>Tipo</label>
           <input
@@ -144,7 +191,6 @@ const VagasStudent = () => {
             onChange={(e) => setFiltroTipo(e.target.value)}
           />
         </div>
-
         <div className="filtro-item">
           <label>Localização</label>
           <input
@@ -154,7 +200,6 @@ const VagasStudent = () => {
             onChange={(e) => setFiltroLocalizacao(e.target.value)}
           />
         </div>
-
         <button className="btn-limpar" onClick={() => {
           setFiltroArea('');
           setFiltroTipo('');
@@ -172,6 +217,7 @@ const VagasStudent = () => {
         </div>
       )}
 
+      {/* LISTA DE VAGAS */}
       <div className="vagas-lista">
         {vagasFiltradas.map((vaga) => (
           <div className="vaga-card" key={vaga.id}>
@@ -182,7 +228,6 @@ const VagasStudent = () => {
                   alt={vaga.company.name}
                 />
               </div>
-
               <div className="vaga-info-principal">
                 <h2>{vaga.title}</h2>
                 <div className="vaga-empresa">
@@ -190,7 +235,6 @@ const VagasStudent = () => {
                   <span>{vaga.company.name}</span>
                 </div>
               </div>
-
               <span className={`status-badge ${vaga.status.toLowerCase()}`}>
                 {vaga.status}
               </span>
@@ -201,17 +245,14 @@ const VagasStudent = () => {
                 <Briefcase size={18} />
                 <span>{vaga.area}</span>
               </div>
-
               <div className="detalhe">
                 <MapPin size={18} />
                 <span>{vaga.location}</span>
               </div>
-
               <div className="detalhe">
                 <Briefcase size={18} />
                 <span>{vaga.type}</span>
               </div>
-
               <div className="detalhe">
                 <Calendar size={18} />
                 <span>{formatarData(vaga.createdAt)}</span>
@@ -225,9 +266,10 @@ const VagasStudent = () => {
               </div>
             </div>
 
+            {/* Botão que abre o modal de origem */}
             <button
               className={`btn-candidatar ${candidaturas[vaga.id] === 'done' ? 'btn-candidatar--done' : ''} ${candidaturas[vaga.id] === 'error' ? 'btn-candidatar--error' : ''}`}
-              onClick={() => handleCandidatar(vaga.id)}
+              onClick={() => handleAbrirModal(vaga)}
               disabled={getBtnDisabled(vaga.id)}
             >
               {getBtnLabel(vaga.id)}
@@ -241,6 +283,37 @@ const VagasStudent = () => {
           <p>Mostrando {vagasFiltradas.length} de {vagas.length} vagas</p>
         </div>
       )}
+
+      {/* MODAL DE ORIGEM DA CANDIDATURA */}
+      {sourceModal && (
+        <div className="source-modal-overlay">
+          <div className="source-modal">
+            <div className="source-modal__header">
+              <h3>Como você ficou sabendo desta vaga?</h3>
+              <button onClick={() => setSourceModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="source-modal__subtitle">
+              Candidatando-se para <strong>{vagaSelecionada?.title}</strong>
+            </p>
+
+            <div className="source-modal__options">
+              {sourceOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className="source-modal__option"
+                  onClick={() => handleCandidatar(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

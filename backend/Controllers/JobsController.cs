@@ -352,5 +352,64 @@ namespace backend.Controllers
 
             return Ok(candidates);
         }
+
+        // CANDIDATAR-SE A UMA VAGA
+        [Authorize]
+        [HttpPost("{id}/apply")]
+        public async Task<IActionResult> ApplyToJob(Guid id, [FromBody] ApplyJobDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("ID claim não encontrada no token.");
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            if (user == null || user.Role.ToString() != "Student")
+                return StatusCode(403, new { message = "Apenas alunos podem se candidatar a vagas." });
+
+            var job = await _context.Jobs
+                .Include(j => j.Company)
+                .FirstOrDefaultAsync(j => j.Id == id);
+
+            if (job == null)
+                return NotFound(new { message = "Vaga não encontrada." });
+
+            if (job.Status != "Aberta")
+                return BadRequest(new { message = "Esta vaga não está mais aceitando candidaturas." });
+
+            var alreadyApplied = await _context.JobApplications
+                .AnyAsync(ja => ja.JobId == id && ja.StudentUserId == Guid.Parse(userId));
+
+            if (alreadyApplied)
+                return BadRequest(new { message = "Você já se candidatou a esta vaga." });
+
+            var application = new JobApplication
+            {
+                JobId = id,
+                StudentUserId = Guid.Parse(userId),
+                Source = dto.Source // Salva a origem da candidatura
+            };
+
+            _context.JobApplications.Add(application);
+
+            job.Candidates += 1;
+            _context.Jobs.Update(job);
+
+            var notification = new Notification
+            {
+                CompanyId = job.CompanyId,
+                JobId = job.Id,
+                StudentUserId = Guid.Parse(userId),
+                Message = $"{user.Name} se candidatou à vaga \"{job.Title}\"."
+            };
+
+            _context.Notifications.Add(notification);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Candidatura realizada com sucesso!" });
+        }
     }
 }

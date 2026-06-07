@@ -13,5 +13,8 @@ namespace backend.Models
         public DateTime AppliedAt { get; set; } = DateTime.UtcNow;
 
         public string Status { get; set; } = "Pendente";
+
+        // Origem da candidatura (Indicação, LinkedIn, Outros, Plataforma)
+        public string? Source { get; set; }
     }
 }
