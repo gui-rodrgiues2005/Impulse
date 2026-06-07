@@ -4,7 +4,7 @@ using CloudinaryDotNet.Actions;
 public class CloudinaryService
 {
     private readonly Cloudinary _cloudinary;
-
+    public Cloudinary GetCloudinary() => _cloudinary;
     public CloudinaryService(IConfiguration config)
     {
         var account = new Account(

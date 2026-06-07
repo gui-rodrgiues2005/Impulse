@@ -16,6 +16,6 @@ public class StudentProfile
     public string? University { get; set; }
     public string? ProfileImage { get; set; }
     public string? Location { get; set; }
-
+    public string? ResumoUrl { get; set; }
     public User User { get; set; } = null!;
 }
