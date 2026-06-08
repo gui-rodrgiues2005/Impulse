@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Publicacoes.scss";
-import { ImagePlus, ChevronDown, X } from "lucide-react";
+import { ImagePlus, ChevronDown, X, MessageCircle } from "lucide-react";
 import API_URL from "../../service/api";
 
 const ACTIVITY_TYPES = [
@@ -13,6 +13,24 @@ const ACTIVITY_TYPES = [
   "Dica Profissional",
 ];
 
+const COMMENT_PERMISSIONS = [
+  {
+    value: "Todos",
+    label: "Todos",
+    description: "Qualquer usuário pode comentar",
+  },
+  {
+    value: "ApenasEmpresas",
+    label: "Apenas Empresas",
+    description: "Somente contas de empresa podem comentar",
+  },
+  {
+    value: "Ninguem",
+    label: "Ninguém",
+    description: "Comentários desativados nesta publicação",
+  },
+];
+
 function PublicarAtividade() {
   const [habilidadesSelecionadas, setHabilidadesSelecionadas] = useState([]);
   const [title, setTitle] = useState("");
@@ -21,6 +39,7 @@ function PublicarAtividade() {
   const [level, setLevel] = useState("");
   const [link, setLink] = useState("");
   const [visibility, setVisibility] = useState("Publico");
+  const [commentPermission, setCommentPermission] = useState("Todos"); // ← novo
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -48,7 +67,6 @@ function PublicarAtividade() {
     return () => URL.revokeObjectURL(url);
   }, [selectedFile]);
 
-  // Quando o checkbox de trajetória é marcado, preenche o título e tipo automaticamente
   useEffect(() => {
     if (addToTrajectory) {
       if (title && !trajectoryTitle) setTrajectoryTitle(title);
@@ -103,6 +121,7 @@ function PublicarAtividade() {
         level,
         link,
         visibility,
+        commentPermission, // ← novo campo no payload
         mediaUrl,
         skillIds: [],
       };
@@ -146,6 +165,7 @@ function PublicarAtividade() {
       // Reset
       setTitle(""); setDescription(""); setType(""); setLevel("");
       setLink(""); setHabilidadesSelecionadas([]); setVisibility("Publico");
+      setCommentPermission("Todos"); // ← reset
       setSelectedFile(null); setAddToTrajectory(false);
       setTrajectoryTitle(""); setTrajectoryType("");
       setTrajectoryStart(""); setTrajectoryEnd(""); setTrajectoryOngoing(false);
@@ -251,6 +271,35 @@ function PublicarAtividade() {
               </label>
             </div>
           </div>
+
+          {/* ── PERMISSÃO DE COMENTÁRIOS ── */}
+          <div className="form-group">
+            <label className="label-with-icon">
+              <MessageCircle size={16} />
+              Quem pode comentar nesta publicação?
+            </label>
+            <div className="comment-permission-options">
+              {COMMENT_PERMISSIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`comment-permission-card ${commentPermission === opt.value ? "selected" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="commentPermission"
+                    value={opt.value}
+                    checked={commentPermission === opt.value}
+                    onChange={(e) => setCommentPermission(e.target.value)}
+                  />
+                  <div className="permission-text">
+                    <h4>{opt.label}</h4>
+                    <p>{opt.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+          {/* ──────────────────────────────── */}
 
           <button className="publish-button" onClick={handlePublish} disabled={loading || uploadingFile}>
             {uploadingFile ? "Enviando imagem..." : loading ? "Publicando..." : "Publicar Atividade"}

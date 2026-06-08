@@ -12,8 +12,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
@@ -30,142 +28,56 @@ const monthlyData = [
   { mes: "Mar", candidatos: 360 },
 ];
 
-const funnelData = [
-  { etapa: "Triagem", valor: 440 },
-  { etapa: "Entrevista", valor: 320 },
-  { etapa: "Teste", valor: 210 },
-  { etapa: "Proposta", valor: 90 },
-  { etapa: "Contratado", valor: 55 },
-];
-
 const origemData = [
   { name: "Plataforma", value: 55, color: "#1e3a5f" },
-  { name: "Indicação", value: 20, color: "#2bb5a0" },
-  { name: "LinkedIn", value: 18, color: "#2f5496" },
-  { name: "Outros", value: 7, color: "#8f8f8f" },
+  { name: "Indicação",  value: 20, color: "#2bb5a0" },
+  { name: "LinkedIn",   value: 18, color: "#2f5496" },
+  { name: "Outros",     value: 7,  color: "#8f8f8f" },
 ];
-
-const indicadores = [
-  {
-    label: "Taxa de contratação",
-    value: "6.3%",
-    badge: "+0.8 pts",
-    positive: true,
-  },
-  {
-    label: "Tempo médio de contratação",
-    value: "21 dias",
-    badge: "-3 dias",
-    positive: true,
-  },
-];
-
-function badgeCss(positive) {
-
-  if (positive) {
-    return {
-      background: "#eaf6f1",
-      color: "#1a7a56",
-    };
-  }
-
-  return {
-    background: "#f4f4f2",
-    color: "#5f5f5f",
-  };
-}
 
 function ChartTooltip({ active, payload, label }) {
-
-  if (!active || !payload?.length) {
-    return null;
-  }
+  if (!active || !payload?.length) return null;
 
   return (
     <div className="chart-tooltip">
-
-      <p className="chart-tooltip__label">
-        {label}
-      </p>
-
+      <p className="chart-tooltip__label">{label}</p>
       {payload.map((p, i) => (
-
-        <p
-          key={i}
-          className="chart-tooltip__item"
-          style={{ color: p.color }}
-        >
+        <p key={i} className="chart-tooltip__item" style={{ color: p.color }}>
           {p.name}: <strong>{p.value}</strong>
         </p>
-
       ))}
-
     </div>
   );
 }
 
-function KpiCard({
-  icon,
-  value,
-  label,
-  trend,
-  trendSub,
-}) {
-
+function KpiCard({ icon, value, label, trend, trendSub }) {
   return (
     <div className="kpi-card">
-
-      <span className="kpi-card__icon-link">
-        ↗
-      </span>
-
-      <div className="kpi-card__icon">
-        {icon}
-      </div>
-
-      <div className="kpi-card__value">
-        {value}
-      </div>
-
-      <div className="kpi-card__label">
-        {label}
-      </div>
-
-      <div className="kpi-card__trend">
-        {trend} {trendSub}
-      </div>
-
+      <span className="kpi-card__icon-link">↗</span>
+      <div className="kpi-card__icon">{icon}</div>
+      <div className="kpi-card__value">{value}</div>
+      <div className="kpi-card__label">{label}</div>
+      <div className="kpi-card__trend">{trend} {trendSub}</div>
     </div>
   );
 }
 
 export default function Dashboard() {
-
   const [jobs, setJobs] = useState([]);
   const [hov, setHov] = useState(null);
 
   async function loadJobs() {
-
     try {
-
       const userStr = localStorage.getItem("user");
-
       if (!userStr) return;
 
       const user = JSON.parse(userStr);
-
-      const response = await fetch(
-        `${API_URL}/Company/${user.companyId}/jobs`
-      );
-
+      const response = await fetch(`${API_URL}/Company/${user.companyId}/jobs`);
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message);
-      }
+      if (!response.ok) throw new Error(data.message);
 
       setJobs(data);
-
     } catch (err) {
       console.error(err);
     }
@@ -175,36 +87,21 @@ export default function Dashboard() {
     loadJobs();
   }, []);
 
-  const vagasAbertas =
-    jobs.filter((j) => j.status === "Aberta").length;
-
-  const totalCandidatos =
-    jobs.reduce(
-      (acc, curr) => acc + (curr.candidates || 0),
-      0
-    );
+  const vagasAbertas = jobs.filter((j) => j.status === "Aberta").length;
+  const totalCandidatos = jobs.reduce((acc, curr) => acc + (curr.candidates || 0), 0);
 
   return (
     <div className="company-dashboard">
 
       <div className="company-dashboard__header">
-
         <div>
-
-          <p className="company-dashboard__subtitle">
-            Console Corporativo
-          </p>
-
-          <h1 className="company-dashboard__title">
-            Dashboard da empresa
-          </h1>
-
+          <p className="company-dashboard__subtitle">Console Corporativo</p>
+          <h1 className="company-dashboard__title">Dashboard da empresa</h1>
         </div>
-
       </div>
 
+      {/* KPIs */}
       <div className="company-dashboard__kpis">
-
         <KpiCard
           icon="💼"
           value={vagasAbertas}
@@ -212,7 +109,6 @@ export default function Dashboard() {
           trend="+3"
           trendSub="esta semana"
         />
-
         <KpiCard
           icon="👥"
           value={totalCandidatos}
@@ -220,103 +116,39 @@ export default function Dashboard() {
           trend="+128"
           trendSub="este mês"
         />
-
       </div>
 
+      {/* GRÁFICOS */}
       <div className="company-dashboard__charts">
 
         <div className="dashboard-card dashboard-card--large">
-
           <div className="dashboard-card__header">
-
             <div>
-
               <h3>Crescimento mensal</h3>
-
-              <p>
-                Fluxo de candidatos
-              </p>
-
+              <p>Fluxo de candidatos</p>
             </div>
-
           </div>
-
-          <ResponsiveContainer
-            width="100%"
-            height={240}
-          >
-
+          <ResponsiveContainer width="100%" height={240}>
             <AreaChart data={monthlyData}>
-
               <defs>
-
-                <linearGradient
-                  id="gcand"
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-
-                  <stop
-                    offset="5%"
-                    stopColor="#1e3a5f"
-                    stopOpacity={0.14}
-                  />
-
-                  <stop
-                    offset="95%"
-                    stopColor="#1e3a5f"
-                    stopOpacity={0}
-                  />
-
+                <linearGradient id="gcand" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#1e3a5f" stopOpacity={0.14} />
+                  <stop offset="95%" stopColor="#1e3a5f" stopOpacity={0} />
                 </linearGradient>
-
               </defs>
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#f0f0f0"
-                vertical={false}
-              />
-
-              <XAxis
-                dataKey="mes"
-                axisLine={false}
-                tickLine={false}
-              />
-
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-              />
-
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis dataKey="mes" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip />} />
-
-              <Area
-                type="monotone"
-                dataKey="candidatos"
-                stroke="#1e3a5f"
-                fill="url(#gcand)"
-              />
-
+              <Area type="monotone" dataKey="candidatos" stroke="#1e3a5f" fill="url(#gcand)" />
             </AreaChart>
-
           </ResponsiveContainer>
-
         </div>
 
         <div className="dashboard-card">
-
           <h3>Origem dos candidatos</h3>
-
-          <ResponsiveContainer
-            width="100%"
-            height={240}
-          >
-
+          <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-
               <Pie
                 data={origemData}
                 dataKey="value"
@@ -325,175 +157,51 @@ export default function Dashboard() {
                 onMouseEnter={(_, i) => setHov(i)}
                 onMouseLeave={() => setHov(null)}
               >
-
                 {origemData.map((e, i) => (
-
                   <Cell
                     key={i}
                     fill={e.color}
-                    opacity={
-                      hov === null || hov === i
-                        ? 1
-                        : 0.4
-                    }
+                    opacity={hov === null || hov === i ? 1 : 0.4}
                   />
-
                 ))}
-
               </Pie>
-
               <Legend />
-
             </PieChart>
-
           </ResponsiveContainer>
-
         </div>
 
       </div>
 
-      <div className="company-dashboard__bottom">
-
-        <div className="dashboard-card dashboard-card--large">
-
-          <h3>Funil de contratação</h3>
-
-          <ResponsiveContainer
-            width="100%"
-            height={240}
-          >
-
-            <BarChart
-              data={funnelData}
-              layout="vertical"
-            >
-
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="#f0f0f0"
-              />
-
-              <XAxis
-                type="number"
-                axisLine={false}
-                tickLine={false}
-              />
-
-              <YAxis
-                type="category"
-                dataKey="etapa"
-                axisLine={false}
-                tickLine={false}
-              />
-
-              <Tooltip content={<ChartTooltip />} />
-
-              <Bar
-                dataKey="valor"
-                fill="#1e2d45"
-                radius={[0, 5, 5, 0]}
-              />
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        <div className="dashboard-card">
-
-          <h3>Indicadores</h3>
-
-          <div className="indicator-list">
-
-            {indicadores.map((ind, i) => (
-
-              <div
-                key={i}
-                className="indicator-item"
-              >
-
-                <div>
-
-                  <p>{ind.label}</p>
-
-                  <h2>{ind.value}</h2>
-
-                </div>
-
-                <span style={badgeCss(ind.positive)}>
-                  {ind.badge}
-                </span>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        </div>
-
-      </div>
-
+      {/* TABELA DE VAGAS */}
       <div className="dashboard-card">
-
         <div className="dashboard-card__header">
-
           <div>
-
             <h3>Vagas recentes</h3>
-
-            <p>
-              Pipeline da empresa
-            </p>
-
+            <p>Pipeline da empresa</p>
           </div>
-
         </div>
-
         <table className="jobs-table">
-
           <thead>
-
             <tr>
-
               <th>VAGA</th>
               <th>ÁREA</th>
               <th>CANDIDATOS</th>
               <th>STATUS</th>
-
             </tr>
-
           </thead>
-
           <tbody>
-
             {jobs.map((job) => (
-
               <tr key={job.id}>
-
                 <td>{job.title}</td>
-
                 <td>{job.area}</td>
-
                 <td>{job.candidates}</td>
-
                 <td>
-
-                  <span className="status-badge">
-                    {job.status}
-                  </span>
-
+                  <span className="status-badge">{job.status}</span>
                 </td>
-
               </tr>
-
             ))}
-
           </tbody>
-
         </table>
-
       </div>
 
     </div>

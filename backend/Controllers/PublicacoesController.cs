@@ -19,15 +19,21 @@ public class PublicacoesController : ControllerBase
         _context = context;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<ActionResult<List<FeedPostResponseDto>>> GetFeed()
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsedUserId = string.IsNullOrEmpty(userId) ? Guid.Empty : Guid.Parse(userId);
+
         var posts = await _context.FeedPosts
             .Include(x => x.User)
                 .ThenInclude(u => u.StudentProfile)
             .Include(x => x.User)
                 .ThenInclude(u => u.CompanyProfile)
             .Include(x => x.Skills)
+            .Include(x => x.Likes)
+            .Include(x => x.Comments)
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new FeedPostResponseDto
             {
@@ -48,20 +54,24 @@ public class PublicacoesController : ControllerBase
                 Link = x.Link,
                 MediaUrl = x.MediaUrl,
                 Visibility = x.Visibility,
+                CommentPermission = x.CommentPermission,
                 CreatedAt = x.CreatedAt,
-                Skills = x.Skills
-                    .Select(skill => skill.Name)
-                    .ToList()
+                Skills = x.Skills.Select(skill => skill.Name).ToList(),
+                LikesCount = x.Likes.Count,
+                CommentsCount = x.Comments.Count,
+                Liked = x.Likes.Any(l => l.UserId == parsedUserId)
             })
             .ToListAsync();
 
         return Ok(posts);
     }
+
     [Authorize]
     [HttpGet("my-posts")]
     public async Task<ActionResult<List<FeedPostResponseDto>>> GetMyPosts()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsedUserId = Guid.Parse(userId!);
 
         var posts = await _context.FeedPosts
             .Include(x => x.User)
@@ -69,7 +79,9 @@ public class PublicacoesController : ControllerBase
             .Include(x => x.User)
                 .ThenInclude(u => u.CompanyProfile)
             .Include(x => x.Skills)
-            .Where(x => x.UserId.ToString() == userId)
+            .Include(x => x.Likes)
+            .Include(x => x.Comments)
+            .Where(x => x.UserId == parsedUserId)
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new FeedPostResponseDto
             {
@@ -82,7 +94,6 @@ public class PublicacoesController : ControllerBase
                         : x.User.StudentProfile != null
                             ? x.User.StudentProfile.ProfileImage
                             : null,
-
                 UserRole = x.User.Role.ToString(),
                 Title = x.Title,
                 Description = x.Description,
@@ -91,10 +102,12 @@ public class PublicacoesController : ControllerBase
                 Link = x.Link,
                 MediaUrl = x.MediaUrl,
                 Visibility = x.Visibility,
+                CommentPermission = x.CommentPermission,
                 CreatedAt = x.CreatedAt,
-                Skills = x.Skills
-                    .Select(skill => skill.Name)
-                    .ToList()
+                Skills = x.Skills.Select(skill => skill.Name).ToList(),
+                LikesCount = x.Likes.Count,
+                CommentsCount = x.Comments.Count,
+                Liked = x.Likes.Any(l => l.UserId == parsedUserId)
             })
             .ToListAsync();
 
@@ -104,15 +117,13 @@ public class PublicacoesController : ControllerBase
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<FeedPostResponseDto>> CreatePost(
-     [FromBody] CreateFeedPostDto dto
- )
+        [FromBody] CreateFeedPostDto dto
+    )
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (!Guid.TryParse(userId, out var parsedUserId))
-        {
             return BadRequest(new { message = "ID de usuário inválido" });
-        }
 
         var user = await _context.Users
             .Include(x => x.StudentProfile)
@@ -120,9 +131,7 @@ public class PublicacoesController : ControllerBase
             .FirstOrDefaultAsync(u => u.Id == parsedUserId);
 
         if (user == null)
-        {
             return NotFound(new { message = "Usuário não encontrado" });
-        }
 
         var post = new FeedPost
         {
@@ -133,7 +142,8 @@ public class PublicacoesController : ControllerBase
             Level = dto.Level,
             Link = dto.Link ?? "",
             MediaUrl = dto.MediaUrl,
-            Visibility = dto.Visibility ?? "Publico"
+            Visibility = dto.Visibility ?? "Publico",
+            CommentPermission = dto.CommentPermission ?? "Todos"
         };
 
         _context.FeedPosts.Add(post);
@@ -158,8 +168,12 @@ public class PublicacoesController : ControllerBase
             Link = post.Link,
             MediaUrl = post.MediaUrl,
             Visibility = post.Visibility,
+            CommentPermission = post.CommentPermission,
             CreatedAt = post.CreatedAt,
-            Skills = []
+            Skills = [],
+            LikesCount = 0,
+            CommentsCount = 0,
+            Liked = false
         });
     }
 }

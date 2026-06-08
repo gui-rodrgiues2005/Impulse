@@ -20,7 +20,6 @@ import CompanyProfile from "./Pages/company/CompanyProfile/CompanyProfile";
 
 import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
 import Vagas from "./Pages/company/Vagas/Vagas";
-import Analytics from "./Pages/company/Analytics/Analytics";
 import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
 
@@ -148,11 +147,6 @@ function AppRoutes() {
               <Route
                 path="feed"
                 element={<Feed />}
-              />
-
-              <Route
-                path="analytics"
-                element={<Analytics />}
               />
 
               <Route

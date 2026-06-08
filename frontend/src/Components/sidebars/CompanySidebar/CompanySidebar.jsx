@@ -16,6 +16,7 @@ import {
 import { NavLink, useNavigate } from "react-router-dom";
 import API_URL from "../../../service/api";
 import NotificationBell from "./NotificationBell";
+import Logo from "../../../assets/logo.png";
 
 const CompanySidebar = () => {
   const navigate = useNavigate();
@@ -63,13 +64,8 @@ const CompanySidebar = () => {
       <div className="company-sidebar__top">
 
         <div className="company-sidebar__logo">
-          <div className="company-sidebar__logo-icon">
-            <Building2 size={22} />
-          </div>
-
           <div className="company-sidebar__logo-text">
-            <h2>IMPULSE</h2>
-            <span>COMPANY CONSOLE</span>
+            <img src={Logo} alt="Impulse" className="company-sidebar__logo-image" />
           </div>
         </div>
 
@@ -93,11 +89,6 @@ const CompanySidebar = () => {
           <NavLink to="/company/vagas" className="company-sidebar__item">
             <BriefcaseBusiness size={20} />
             <span>Vagas</span>
-          </NavLink>
-
-          <NavLink to="/company/analytics" className="company-sidebar__item">
-            <BarChart3 size={20} />
-            <span>Analytics</span>
           </NavLink>
 
           <NavLink to="/company/chats" className="company-sidebar__item">

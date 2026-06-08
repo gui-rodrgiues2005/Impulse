@@ -25,94 +25,56 @@ public class FeedController : ControllerBase
         [FromBody] CreateFeedPostDto dto
     )
     {
-        var userId =
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier
-            );
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized(
-                "Usuário não autenticado."
-            );
-        }
+            return Unauthorized("Usuário não autenticado.");
 
         var user = await _context.Users
             .Include(x => x.Skills)
-            .FirstOrDefaultAsync(x =>
-                x.Id == Guid.Parse(userId)
-            );
+            .FirstOrDefaultAsync(x => x.Id == Guid.Parse(userId));
 
         if (user == null)
-        {
-            return NotFound(
-                "Usuário não encontrado."
-            );
-        }
+            return NotFound("Usuário não encontrado.");
 
         var post = new FeedPost
         {
             Id = Guid.NewGuid(),
-
             UserId = user.Id,
-
             Title = dto.Title,
-
             Description = dto.Description,
-
             ActivityType = dto.ActivityType,
-
             Level = dto.Level,
-
             Link = dto.Link,
-
             Visibility = dto.Visibility,
-
             MediaUrl = dto.MediaUrl,
-
+            CommentPermission = dto.CommentPermission ?? "Todos", // ← novo
             CreatedAt = DateTime.UtcNow
         };
 
-        if (
-            dto.SkillIds != null &&
-            dto.SkillIds.Any()
-        )
+        if (dto.SkillIds != null && dto.SkillIds.Any())
         {
             var skills = await _context.Skills
-                .Where(x =>
-                    dto.SkillIds.Contains(x.Id)
-                )
+                .Where(x => dto.SkillIds.Contains(x.Id))
                 .ToListAsync();
 
             post.Skills = skills;
         }
 
         _context.FeedPosts.Add(post);
-
         await _context.SaveChangesAsync();
 
-        return Ok(new
-        {
-            message =
-                "Atividade publicada com sucesso."
-        });
+        return Ok(new { message = "Atividade publicada com sucesso." });
     }
 
     [Authorize]
     [HttpDelete("{postId}")]
-    public async Task<IActionResult> DeletePost(
-        Guid postId
-    )
+    public async Task<IActionResult> DeletePost(Guid postId)
     {
-        var userId =
-            User.FindFirstValue(
-                ClaimTypes.NameIdentifier
-            );
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (string.IsNullOrEmpty(userId))
-        {
             return Unauthorized();
-        }
 
         var post = await _context.FeedPosts
             .FirstOrDefaultAsync(x =>
@@ -121,20 +83,11 @@ public class FeedController : ControllerBase
             );
 
         if (post == null)
-        {
-            return NotFound(
-                "Post não encontrado."
-            );
-        }
+            return NotFound("Post não encontrado.");
 
         _context.FeedPosts.Remove(post);
-
         await _context.SaveChangesAsync();
 
-        return Ok(new
-        {
-            message =
-                "Post removido com sucesso."
-        });
+        return Ok(new { message = "Post removido com sucesso." });
     }
 }

@@ -17,7 +17,7 @@ public class FeedPostResponseDto
     public string Description { get; set; }
 
     public string ActivityType { get; set; }
-
+    public string CommentPermission { get; set; } = "Todos";
     public string Level { get; set; }
 
     public string Link { get; set; }
@@ -29,4 +29,11 @@ public class FeedPostResponseDto
     public DateTime CreatedAt { get; set; }
 
     public List<string> Skills { get; set; }
+
+    // ── novos campos ──
+    public int LikesCount { get; set; }
+
+    public int CommentsCount { get; set; }
+
+    public bool Liked { get; set; }
 }

@@ -23,6 +23,9 @@ namespace backend.Data
         public DbSet<FeedPost> FeedPosts { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<Trajectory> Trajectories { get; set; }
+        public DbSet<FeedLike> FeedLikes { get; set; }
+        public DbSet<FeedComment> FeedComments { get; set; }
+
 
         // ACTIVITIES
         public DbSet<Activity> Activities { get; set; }
@@ -105,6 +108,31 @@ namespace backend.Data
                     .OnDelete(DeleteBehavior.SetNull)
                     .IsRequired(false);
             });
+
+
+            modelBuilder.Entity<FeedLike>()
+                .HasOne(x => x.Post)
+                .WithMany(x => x.Likes)
+                .HasForeignKey(x => x.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FeedLike>()
+                .HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FeedComment>()
+                .HasOne(x => x.Post)
+                .WithMany(x => x.Comments)
+                .HasForeignKey(x => x.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<FeedComment>()
+                .HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // =========================================
             // COMPANY -> USER (1:1)

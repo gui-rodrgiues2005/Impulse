@@ -15,6 +15,7 @@ import {
 
 import { NavLink, useNavigate } from "react-router-dom";
 import API_URL from "../../../service/api";
+import Logo from "../../../assets/logo.png";
 
 const StudentSidebar = () => {
   const navigate = useNavigate();
@@ -61,17 +62,11 @@ const StudentSidebar = () => {
       <div className="student-sidebar__top">
 
         <div className="student-sidebar__logo">
-
-          <div className="student-sidebar__logo-icon">
-            <GraduationCap size={22} />
-          </div>
-
           <div className="student-sidebar__logo-text">
-            <h2>IMPULSE</h2>
-            <span>STUDENT NETWORK</span>
+              <img src={Logo} alt="Impulse" className="student-sidebar__logo-image" />
           </div>
-
         </div>
+        
         <nav className="student-sidebar__nav">
 
           <NavLink

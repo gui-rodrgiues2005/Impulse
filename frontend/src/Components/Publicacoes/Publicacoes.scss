@@ -5,7 +5,7 @@
   background: #f8fafc; // Tom levemente mais moderno/clean
   display: flex;
   justify-content: center; // Alinha horizontalmente no centro da tela
-  align-items: flex-start; 
+  align-items: flex-start;
 }
 
 .container-wrapper {
@@ -62,7 +62,10 @@
   &:hover {
     border-color: #2d5d9f;
     background: #f0f7ff;
-    .upload-icon { color: #2d5d9f; }
+
+    .upload-icon {
+      color: #2d5d9f;
+    }
   }
 
   &.has-preview {
@@ -148,7 +151,7 @@
     font-size: 14px;
     font-weight: 600;
     color: #334155;
-    
+
     .optional {
       font-weight: 400;
       color: #94a3b8;
@@ -305,6 +308,77 @@ select {
   &:disabled {
     background: #94a3b8;
     cursor: not-allowed;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PERMISSÃO DE COMENTÁRIOS — adicione ao Publicacoes.scss
+   ═══════════════════════════════════════════════════════ */
+
+.label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 10px;
+
+  svg {
+    color: #6366f1;
+  }
+}
+
+.comment-permission-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-permission-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+
+  input[type="radio"] {
+    accent-color: #6366f1;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .permission-text {
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 2px;
+    }
+
+    p {
+      font-size: 0.775rem;
+      color: #6b7280;
+      margin: 0;
+    }
+  }
+
+  &.selected {
+    border-color: #6366f1;
+    background: #f5f3ff;
+
+    .permission-text h4 {
+      color: #4f46e5;
+    }
+  }
+
+  &:hover:not(.selected) {
+    border-color: #c7d2fe;
+    background: #fafafa;
   }
 }
 

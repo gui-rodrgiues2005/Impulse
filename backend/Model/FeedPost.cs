@@ -21,10 +21,10 @@ public class FeedPost
     public string Visibility { get; set; }
 
     public string? MediaUrl { get; set; }
+    public string CommentPermission { get; set; } = "Todos";
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public DateTime CreatedAt { get; set; }
-        = DateTime.UtcNow;
-
-    public List<Skill> Skills { get; set; }
-        = new();
+    public List<Skill> Skills { get; set; } = new();
+    public ICollection<FeedLike> Likes { get; set; } = [];
+    public ICollection<FeedComment> Comments { get; set; } = [];
 }

@@ -13,6 +13,7 @@ public class CreateFeedPostDto
     public string Link { get; set; }
 
     public string Visibility { get; set; }
+    public string? CommentPermission { get; set; }
 
     public string? MediaUrl { get; set; }
 
