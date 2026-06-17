@@ -224,75 +224,7 @@ namespace backend.Controllers
         // Incrementa o contador de candidatos na vaga
         // Cria uma notificação para a empresa
         // =========================================
-        [Authorize]
-        [HttpPost("{id}/apply")]
-        public async Task<IActionResult> ApplyToJob(Guid id)
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized("ID claim não encontrada no token.");
-
-            // Verifica se o usuário é aluno
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Id.ToString() == userId);
-
-            if (user == null || user.Role.ToString() != "Student")
-                return StatusCode(403, new { message = "Apenas alunos podem se candidatar a vagas." });
-
-            // Verifica se a vaga existe
-            var job = await _context.Jobs
-                .Include(j => j.Company)
-                .FirstOrDefaultAsync(j => j.Id == id);
-
-            if (job == null)
-                return NotFound(new { message = "Vaga não encontrada." });
-
-            // Verifica se a vaga está aberta
-            if (job.Status != "Aberta")
-                return BadRequest(new { message = "Esta vaga não está mais aceitando candidaturas." });
-
-            // Verifica se o aluno já se candidatou
-            var alreadyApplied = await _context.JobApplications
-                .AnyAsync(ja => ja.JobId == id && ja.StudentUserId == Guid.Parse(userId));
-
-            if (alreadyApplied)
-                return BadRequest(new { message = "Você já se candidatou a esta vaga." });
-
-            // Cria a candidatura
-            var application = new JobApplication
-            {
-                JobId = id,
-                StudentUserId = Guid.Parse(userId)
-            };
-
-            _context.JobApplications.Add(application);
-
-            // Incrementa o contador de candidatos
-            job.Candidates += 1;
-            _context.Jobs.Update(job);
-
-            // Cria notificação para a empresa
-            var notification = new Notification
-            {
-                CompanyId = job.CompanyId,
-                JobId = job.Id,
-                StudentUserId = Guid.Parse(userId),
-                Message = $"{user.Name} se candidatou à vaga \"{job.Title}\"."
-            };
-
-            _context.Notifications.Add(notification);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Candidatura realizada com sucesso!" });
-        }
-
-        // =========================================
-        // BUSCA CANDIDATOS DE UMA VAGA
-        // Apenas a empresa dona da vaga pode ver os candidatos
-        // Retorna: dados do aluno, perfil, bio, skills
-        // =========================================
+ 
         [Authorize]
         [HttpGet("{id}/candidates")]
         public async Task<IActionResult> GetCandidates(Guid id)
