@@ -7,54 +7,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
+// JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new Exception("Jwt:Key não configurada no appsettings.json");
+}
+
 var key = Encoding.ASCII.GetBytes(jwtKey);
 
-builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-
-        ValidateIssuer = true,
-        ValidateAudience = true,
-
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"]
-    };
-
-    options.Events = new JwtBearerEvents
-    {
-        OnChallenge = async context =>
-        {
-            context.HandleResponse();
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsJsonAsync(new { message = "Unauthorized" });
-        }
-    };
-});
-
-builder.Services.AddAuthorization();
-
-builder.Services.AddScoped<CloudinaryService>();
-
+// Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -62,6 +27,99 @@ builder.Services.AddControllers()
             .Add(new JsonStringEnumConverter());
     });
 
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+
+        ClockSkew = TimeSpan.Zero,
+
+        NameClaimType = "nameid",
+        RoleClaimType = "role"
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            Console.WriteLine("=================================");
+            Console.WriteLine("TOKEN RECEBIDO:");
+            Console.WriteLine(context.Request.Headers.Authorization);
+            Console.WriteLine("=================================");
+
+            return Task.CompletedTask;
+        },
+
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("=================================");
+            Console.WriteLine("TOKEN VALIDADO COM SUCESSO");
+            Console.WriteLine("Usuário: " +
+                context.Principal?.Identity?.Name);
+            Console.WriteLine("=================================");
+
+            return Task.CompletedTask;
+        },
+
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine("=================================");
+            Console.WriteLine("ERRO JWT");
+            Console.WriteLine(context.Exception.Message);
+            Console.WriteLine("=================================");
+
+            return Task.CompletedTask;
+        },
+
+        OnChallenge = async context =>
+        {
+            context.HandleResponse();
+
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "application/json";
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                message = "Unauthorized",
+                error = context.Error,
+                description = context.ErrorDescription
+            });
+        }
+    };
+});
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// Services
+builder.Services.AddScoped<CloudinaryService>();
+
+builder.Services.AddScoped<IConversationService, ConversationService>();
+builder.Services.AddScoped<IMessageService, MessageService>();
+
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -75,22 +133,19 @@ builder.Services.AddCors(options =>
         });
 });
 
+// Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
 
-// CHAT SERVICES
-builder.Services.AddScoped<IConversationService, ConversationService>();
-builder.Services.AddScoped<IMessageService, MessageService>();
-
-// SIGNALR
+// SignalR
 builder.Services.AddSignalR();
 
 var app = builder.Build();
 
-
+// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -109,6 +164,7 @@ app.Use(async (context, next) =>
         await context.Response.CompleteAsync();
         return;
     }
+
     await next();
 });
 

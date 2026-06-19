@@ -47,9 +47,22 @@ const VagasStudent = () => {
   // FUNÇÕES
   // =========================================
 
-  // Busca todas as vagas disponíveis ao montar o componente
+  // Busca todas as vagas disponíveis e as candidaturas ao montar o componente
   useEffect(() => {
     fetchVagas();
+    fetchMinhasCandidaturas();
+  }, []);
+
+  // Recarrega candidaturas quando volta à aba
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchMinhasCandidaturas();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   const fetchVagas = async () => {
@@ -72,6 +85,45 @@ const VagasStudent = () => {
       setError('Erro ao carregar vagas');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Busca as candidaturas já feitas pelo usuário
+  const fetchMinhasCandidaturas = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Token ausente ao buscar candidaturas.');
+        return;
+      }
+      const response = await fetch(`${API_URL}/jobs/my-applications`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        console.error('Erro ao buscar candidaturas:', response.status, body);
+        return;
+      }
+
+      const aplicacoes = await response.json();
+      if (!Array.isArray(aplicacoes)) {
+        console.error('Resposta de candidaturas inválida:', aplicacoes);
+        return;
+      }
+
+      const novasCandidaturas = {};
+      aplicacoes.forEach((app) => {
+        novasCandidaturas[app.jobId] = 'done';
+      });
+
+      setCandidaturas(novasCandidaturas);
+    } catch (err) {
+      console.error('Erro ao buscar candidaturas:', err);
     }
   };
 
@@ -99,13 +151,12 @@ const VagasStudent = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ source }), // Envia a origem da candidatura
+        body: JSON.stringify({ source }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Já se candidatou anteriormente
         if (response.status === 400) {
           setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
           return;
@@ -113,7 +164,6 @@ const VagasStudent = () => {
         throw new Error(data.message || 'Erro ao se candidatar');
       }
 
-      // Marca como concluído e atualiza contador localmente
       setCandidaturas((prev) => ({ ...prev, [vagaId]: 'done' }));
       setVagas((prev) =>
         prev.map((v) =>

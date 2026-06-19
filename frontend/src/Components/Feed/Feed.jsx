@@ -37,10 +37,22 @@ function Feed() {
         async function loadFeed() {
             try {
                 const token = localStorage.getItem("token");
+                if (!token) {
+                    throw new Error("Token ausente ao carregar feed.");
+                }
                 const response = await fetch(`${API_URL}/publicacoes`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                if (!response.ok) {
+                    const body = await response.text();
+                    throw new Error(body || "Erro ao carregar feed");
+                }
                 const data = await response.json();
+                if (!Array.isArray(data)) {
+                    console.error("Feed inválido:", data);
+                    setPosts([]);
+                    return;
+                }
                 setPosts(data.map((p) => ({
                     ...p,
                     liked: p.liked ?? false,

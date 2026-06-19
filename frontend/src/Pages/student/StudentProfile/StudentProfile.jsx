@@ -35,7 +35,7 @@ const ACTIVITY_TYPES = [
 
 export default function StudentProfile() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const [userPosts, setUserPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -106,13 +106,20 @@ export default function StudentProfile() {
   const profileUser = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token ausente ao carregar perfil do estudante.");
+        return;
+      }
       const response = await fetch(`${API_URL}/Student/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error("Erro ao carregar perfil");
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(body || "Erro ao carregar perfil");
+      }
       const data = await response.json();
       setStudentProfile(data);
-      setResumeUrl(data.resumeUrl || null); // <- adiciona isso
+      setResumeUrl(data.resumeUrl || null);
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
     }
@@ -121,10 +128,18 @@ export default function StudentProfile() {
   const loadUserPosts = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token ausente ao carregar publicações do usuário.");
+        return;
+      }
       const response = await fetch(`${API_URL}/publicacoes/my-posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (response.ok) setUserPosts(await response.json());
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(body || "Erro ao carregar publicações");
+      }
+      setUserPosts(await response.json());
     } catch (error) {
       console.error("Erro ao carregar publicações:", error);
     } finally {
@@ -135,10 +150,18 @@ export default function StudentProfile() {
   const loadTrajectories = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("Token ausente ao carregar trajetórias.");
+        return;
+      }
       const res = await fetch(`${API_URL}/trajectory`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) setTrajectories(await res.json());
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(body || "Erro ao carregar trajetórias");
+      }
+      setTrajectories(await res.json());
     } catch (err) {
       console.error(err);
     } finally {
@@ -368,7 +391,11 @@ export default function StudentProfile() {
 
         <div className="student-profile__top">
           <div className="student-profile__avatar">
-            <img src={studentProfile.profileImage} alt={user?.name} />
+            {studentProfile.profileImage ? (
+              <img src={studentProfile.profileImage} alt={user?.name} />
+            ) : (
+              <div className="student-profile__avatar-placeholder" />
+            )}
           </div>
         </div>
 
@@ -623,7 +650,7 @@ export default function StudentProfile() {
                 <label>Foto do Perfil</label>
                 <input type="file" accept="image/*" onChange={(e) => setSelectedImage(e.target.files[0])} />
                 <img
-                  src={selectedImage ? URL.createObjectURL(selectedImage) : studentProfile.profileImage}
+                  src={selectedImage ? URL.createObjectURL(selectedImage) : (studentProfile.profileImage || undefined)}
                   alt="Preview"
                   style={{ width: "120px", height: "120px", borderRadius: "50%", objectFit: "cover", marginTop: "10px" }}
                 />

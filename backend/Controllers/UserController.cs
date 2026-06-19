@@ -41,5 +41,44 @@ namespace backend.Controllers
                 Role = user.Role.ToString().ToLower()
             });
         }
+
+        // =========================================
+        // BUSCA PERFIS (ALUNOS E EMPRESAS)
+        // =========================================
+        [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProfiles([FromQuery] string q)
+        {
+            if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+                return Ok(new { students = new List<object>(), companies = new List<object>() });
+
+            var searchTerm = q.ToLower();
+
+            var students = await _context.Users
+                .Where(u => u.Role.ToString() == "Student" && u.Name.ToLower().Contains(searchTerm))
+                .Take(5)
+                .Select(u => new 
+                { 
+                    u.Id, 
+                    u.Name, 
+                    u.AvatarUrl, 
+                    role = "Aluno" 
+                })
+                .ToListAsync();
+
+            var companies = await _context.Users
+                .Where(u => u.Role.ToString() == "Company" && u.Name.ToLower().Contains(searchTerm))
+                .Take(5)
+                .Select(u => new 
+                { 
+                    u.Id, 
+                    u.Name, 
+                    u.AvatarUrl, 
+                    role = "Empresa" 
+                })
+                .ToListAsync();
+
+            return Ok(new { students, companies });
+        }
     }
 }
