@@ -7,6 +7,7 @@ import {
     User,
     Send,
     X,
+    Search,
 } from "lucide-react";
 import { QuickChatButton } from "../QuickChatButton";
 import API_URL from "../../service/api";
@@ -19,7 +20,12 @@ function Feed() {
     const [commentInput, setCommentInput] = useState("");
     const [loadingComments, setLoadingComments] = useState(false);
     const [sendingComment, setSendingComment] = useState(false);
-    const [commentError, setCommentError] = useState({}); // { [postId]: "mensagem" }
+    const [commentError, setCommentError] = useState({});
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState(null);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
 
     const formatRelativeDate = (dateString) => {
         const date = new Date(dateString);
@@ -68,7 +74,37 @@ function Feed() {
         loadFeed();
     }, []);
 
-    /* ── CURTIR ── */
+    useEffect(() => {
+        if (searchTerm.length < 2) {
+            setSearchResults(null);
+            return;
+        }
+
+        async function searchProfiles() {
+            setSearchLoading(true);
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(
+                    `${API_URL}/user/search?q=${encodeURIComponent(searchTerm)}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+                if (!response.ok) throw new Error("Erro ao buscar perfis");
+                const data = await response.json();
+                setSearchResults(data);
+            } catch (error) {
+                console.error("Erro ao buscar perfis:", error);
+                setSearchResults({ students: [], companies: [] });
+            } finally {
+                setSearchLoading(false);
+            }
+        }
+
+        const timer = setTimeout(searchProfiles, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     async function handleLike(postId) {
         const token = localStorage.getItem("token");
         const post = posts.find((p) => p.id === postId);
@@ -99,7 +135,6 @@ function Feed() {
         }
     }
 
-    /* ── ABRIR / FECHAR COMENTÁRIOS ── */
     async function toggleComments(postId) {
         if (openComments === postId) {
             setOpenComments(null);
@@ -110,7 +145,6 @@ function Feed() {
         setCommentInput("");
         setCommentError((prev) => ({ ...prev, [postId]: null }));
 
-        // Sempre recarrega ao abrir para garantir dados frescos
         setLoadingComments(true);
         try {
             const token = localStorage.getItem("token");
@@ -127,7 +161,6 @@ function Feed() {
         }
     }
 
-    /* ── ENVIAR COMENTÁRIO ── */
     async function handleSendComment(postId) {
         const text = commentInput.trim();
         if (!text || sendingComment) return;
@@ -146,7 +179,6 @@ function Feed() {
                 body: JSON.stringify({ content: text }),
             });
 
-            // Verifica se deu erro (403, 400 etc) antes de inserir
             if (!res.ok) {
                 const err = await res.json();
                 setCommentError((prev) => ({
@@ -182,18 +214,89 @@ function Feed() {
     if (loading) return <p>Carregando feed...</p>;
 
     return (
-        <div className="feed-container">
-            <div className="feed-header">
-                <span>STUDENT FEED</span>
-                <h1>Atividades da comunidade</h1>
-                <p>Inspire-se com projetos, cursos e experiências de outros estudantes</p>
+ <div className="feed-container">
+
+    <div className="feed-header">
+        <span>STUDENT FEED</span>
+        <h1>Atividades da comunidade</h1>
+    </div>
+
+    <div className="feed-search-bar">
+        <div className="search-input-wrapper">
+            <Search size={16} className="search-icon" />
+            <input
+                type="text"
+                placeholder="Buscar perfis..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setShowSearch(true)}
+            />
+        </div>
+
+
+        {showSearch && searchTerm.length >= 2 && (
+            <div className="search-dropdown">
+                {searchLoading ? (
+                    <p className="search-loading">Buscando...</p>
+                ) : (
+                            <>
+                                {searchResults?.students?.length > 0 &&
+                                    searchResults.students.map((student) => (
+                                        <div key={student.id} className="search-item">
+                                            <div className="search-item-avatar">
+                                                {student.avatarUrl ? (
+                                                    <img src={student.avatarUrl} alt={student.name} />
+                                                ) : (
+                                                    <User size={14} />
+                                                )}
+                                            </div>
+                                            <div className="search-item-content">
+                                                <p className="search-item-name">{student.name}</p>
+                                                <span className="search-item-role">{student.role}</span>
+                                            </div>
+                                            <QuickChatButton
+                                                userId={student.id}
+                                                userName={student.name}
+                                                avatarUrl={student.avatarUrl}
+                                            />
+                                        </div>
+                                    ))}
+
+                                {searchResults?.companies?.length > 0 &&
+                                    searchResults.companies.map((company) => (
+                                        <div key={company.id} className="search-item">
+                                            <div className="search-item-avatar">
+                                                {company.avatarUrl ? (
+                                                    <img src={company.avatarUrl} alt={company.name} />
+                                                ) : (
+                                                    <User size={14} />
+                                                )}
+                                            </div>
+                                            <div className="search-item-content">
+                                                <p className="search-item-name">{company.name}</p>
+                                                <span className="search-item-role">{company.role}</span>
+                                            </div>
+                                            <QuickChatButton
+                                                userId={company.id}
+                                                userName={company.name}
+                                                avatarUrl={company.avatarUrl}
+                                            />
+                                        </div>
+                                    ))}
+
+                                {(!searchResults?.students?.length && !searchResults?.companies?.length) && (
+                                    <p className="search-empty">Nenhum perfil encontrado</p>
+                                )}
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
 
             <div className="feed-list">
                 {posts.map((post) => (
                     <div className="feed-card" key={post.id}>
 
-                        {/* HEADER USER */}
                         <div className="feed-user">
                             <div className="user-info">
                                 {post.userAvatar ? (
@@ -216,14 +319,12 @@ function Feed() {
                             />
                         </div>
 
-                        {/* IMAGE */}
                         {post.mediaUrl && (
                             <div className="feed-image">
                                 <img src={post.mediaUrl} alt="post" />
                             </div>
                         )}
 
-                        {/* FOOTER */}
                         <div className="feed-footer">
                             <div className="engagement">
                                 <button
@@ -246,14 +347,12 @@ function Feed() {
                             </div>
                         </div>
 
-                        {/* CONTENT */}
                         <div className="feed-content">
                             <h2>{post.title}</h2>
                             <span className="level">{post.level}</span>
                             <p>{post.description}</p>
                         </div>
 
-                        {/* PAINEL DE COMENTÁRIOS */}
                         {openComments === post.id && (
                             <div className="comments-panel">
                                 <div className="comments-panel-header">
@@ -294,14 +393,12 @@ function Feed() {
                                         ))}
                                 </div>
 
-                                {/* ERRO DE PERMISSÃO */}
                                 {commentError[post.id] && (
                                     <p className="comment-permission-error">
                                         {commentError[post.id]}
                                     </p>
                                 )}
 
-                                {/* INPUT DE COMENTÁRIO */}
                                 <div className="comment-input-row">
                                     <input
                                         type="text"

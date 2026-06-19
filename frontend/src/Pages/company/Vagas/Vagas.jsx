@@ -16,6 +16,12 @@ export default function Vagas() {
   // Lista de vagas da empresa
   const [vagas, setVagas] = useState([]);
 
+  // Estado para armazenar o termo de busca
+  const [termoBusca, setTermoBusca] = useState('');
+
+  // Estado para controlar qual vaga tá sendo atualizada
+  const [updatingJobId, setUpdatingJobId] = useState(null);
+
   // Controla se o modal de criar vaga está aberto
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -52,16 +58,58 @@ export default function Vagas() {
   // =========================================
 
   // Busca todas as vagas da empresa no backend
-  async function loadJobs() {
+async function loadJobs() {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${API_URL}/jobs/my-jobs`, { // ← MUDA AQUI
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await response.json();
+    setVagas(data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+  // Filtra as vagas de acordo com o termo de busca
+  const vagasFiltradas = vagas.filter((vaga) => {
+    const termo = termoBusca.toLowerCase();
+    return (
+      vaga.title.toLowerCase().includes(termo) ||
+      vaga.area.toLowerCase().includes(termo) ||
+      vaga.type.toLowerCase().includes(termo) ||
+      vaga.location.toLowerCase().includes(termo)
+    );
+  });
+
+  // Alterna o status da vaga entre "Aberta" e "Fechada"
+  async function handleToggleJobStatus(vaga) {
+    setUpdatingJobId(vaga.id);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/jobs`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const novoStatus = vaga.status === "Aberta" ? "Fechada" : "Aberta";
+      
+      const response = await fetch(`${API_URL}/jobs/${vaga.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: vaga.title,
+          area: vaga.area,
+          type: vaga.type,
+          location: vaga.location,
+          status: novoStatus
+        }),
       });
-      const data = await response.json();
-      setVagas(data);
+      
+      if (!response.ok) throw new Error("Erro ao atualizar status");
+      loadJobs(); // Recarrega a lista
     } catch (error) {
       console.log(error);
+    } finally {
+      setUpdatingJobId(null);
     }
   }
 
@@ -193,7 +241,12 @@ export default function Vagas() {
       {/* BARRA DE BUSCA */}
       <div className="company-jobs__search">
         <Search size={20} className="company-jobs__search-icon" />
-        <input type="text" placeholder="Buscar vagas..." />
+        <input 
+          type="text" 
+          placeholder="Buscar vagas..." 
+          value={termoBusca}
+          onChange={(e) => setTermoBusca(e.target.value)}
+        />
       </div>
 
       {/* TABELA DE VAGAS */}
@@ -206,42 +259,58 @@ export default function Vagas() {
             </tr>
           </thead>
           <tbody>
-            {vagas.map((vaga) => (
-              <tr key={vaga.id}>
-                <td>
-                  <div className="company-jobs__vaga">
-                    <div className="company-jobs__vaga-icon">
-                      <BriefcaseBusiness size={18} />
+            {vagasFiltradas.length > 0 ? (
+              vagasFiltradas.map((vaga) => (
+                <tr key={vaga.id}>
+                  <td>
+                    <div className="company-jobs__vaga">
+                      <div className="company-jobs__vaga-icon">
+                        <BriefcaseBusiness size={18} />
+                      </div>
+                      <span>{vaga.title}</span>
                     </div>
-                    <span>{vaga.title}</span>
-                  </div>
-                </td>
-                <td>{vaga.area}</td>
-                <td>{vaga.type}</td>
-                <td>{vaga.location}</td>
+                  </td>
+                  <td>{vaga.area}</td>
+                  <td>{vaga.type}</td>
+                  <td>{vaga.location}</td>
 
-                {/* Botão clicável que mostra o número de candidatos e abre o modal */}
-                <td>
-                  <button
-                    className="company-jobs__candidates-btn"
-                    onClick={() => handleOpenCandidates(vaga)}
-                    title="Ver candidatos"
-                  >
-                    <Users size={15} />
-                    {vaga.candidates}
-                  </button>
-                </td>
+                  {/* Botão clicável que mostra o número de candidatos e abre o modal */}
+                  <td>
+                    <button
+                      className="company-jobs__candidates-btn"
+                      onClick={() => handleOpenCandidates(vaga)}
+                      title="Ver candidatos"
+                    >
+                      <Users size={15} />
+                      {vaga.candidates}
+                    </button>
+                  </td>
 
-                <td><span className="status-badge">{vaga.status}</span></td>
+                  <td>
+                    <button 
+                      className={`status-badge status-badge--btn ${vaga.status.toLowerCase()}`}
+                      onClick={() => handleToggleJobStatus(vaga)}
+                      disabled={updatingJobId === vaga.id}
+                    >
+                      {updatingJobId === vaga.id ? "Atualizando..." : vaga.status}
+                    </button>
+                  </td>
 
-                {/* Botão de abrir modal de edição */}
-                <td>
-                  <button className="company-jobs__menu" onClick={() => handleOpenEditModal(vaga)}>
-                    <Ellipsis size={18} />
-                  </button>
+                  {/* Botão de abrir modal de edição */}
+                  <td>
+                    <button className="company-jobs__menu" onClick={() => handleOpenEditModal(vaga)}>
+                      <Ellipsis size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
+                  Nenhuma vaga encontrada com "{termoBusca}"
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
@@ -407,10 +476,10 @@ export default function Vagas() {
               <button onClick={() => setModalOpen(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleCreateJob}>
-              <input type="text" name="title" placeholder="Título da vaga" value={formData.title} onChange={handleChange} />
-              <input type="text" name="area" placeholder="Área" value={formData.area} onChange={handleChange} />
-              <input type="text" name="type" placeholder="Tipo" value={formData.type} onChange={handleChange} />
-              <input type="text" name="location" placeholder="Localização" value={formData.location} onChange={handleChange} />
+              <input type="text" name="title" placeholder="Título da vaga" value={formData.title} onChange={handleChange} required />
+              <input type="text" name="area" placeholder="Área" value={formData.area} onChange={handleChange} required />
+              <input type="text" name="type" placeholder="Tipo" value={formData.type} onChange={handleChange} required />
+              <input type="text" name="location" placeholder="Localização" value={formData.location} onChange={handleChange} required />
               <button type="submit">Criar vaga</button>
             </form>
           </div>
@@ -428,10 +497,10 @@ export default function Vagas() {
               <button onClick={() => setEditModalOpen(false)}><X size={20} /></button>
             </div>
             <form onSubmit={handleUpdateJob}>
-              <input type="text" name="title" placeholder="Título da vaga" value={editFormData.title} onChange={handleEditChange} />
-              <input type="text" name="area" placeholder="Área" value={editFormData.area} onChange={handleEditChange} />
-              <input type="text" name="type" placeholder="Tipo" value={editFormData.type} onChange={handleEditChange} />
-              <input type="text" name="location" placeholder="Localização" value={editFormData.location} onChange={handleEditChange} />
+              <input type="text" name="title" placeholder="Título da vaga" value={editFormData.title} onChange={handleEditChange} required />
+              <input type="text" name="area" placeholder="Área" value={editFormData.area} onChange={handleEditChange} required />
+              <input type="text" name="type" placeholder="Tipo" value={editFormData.type} onChange={handleEditChange} required />
+              <input type="text" name="location" placeholder="Localização" value={editFormData.location} onChange={handleEditChange} required />
               <button type="submit">Salvar alterações</button>
             </form>
           </div>

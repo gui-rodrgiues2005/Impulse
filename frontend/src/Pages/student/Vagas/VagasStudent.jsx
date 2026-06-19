@@ -65,11 +65,19 @@ const VagasStudent = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  const fetchVagas = async () => {
+const fetchVagas = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/jobs`, {
+      
+      // Monta os parâmetros de query
+      const params = new URLSearchParams();
+      if (filtroTipo) params.append('type', filtroTipo);
+      if (filtroArea) params.append('specialty', filtroArea);
+      
+      const url = params.toString() ? `${API_URL}/jobs?${params}` : `${API_URL}/jobs`;
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
