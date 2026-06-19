@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Feed.scss";
 import {
     Heart,
@@ -13,6 +14,7 @@ import { QuickChatButton } from "../QuickChatButton";
 import API_URL from "../../service/api";
 
 function Feed() {
+    const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [openComments, setOpenComments] = useState(null);
@@ -27,6 +29,9 @@ function Feed() {
     const [searchLoading, setSearchLoading] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
 
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const basePath = currentUser.role === "student" ? "/student" : "/company";
+
     const formatRelativeDate = (dateString) => {
         const date = new Date(dateString);
         const now = new Date();
@@ -37,6 +42,32 @@ function Feed() {
         if (diff < 86400) return `${Math.floor(diff / 3600)} h`;
         if (diff < 2592000) return `${Math.floor(diff / 86400)} d`;
         return date.toLocaleDateString("pt-BR");
+    };
+
+    const goToProfile = (post) => {
+        if (!post?.userId || !currentUser?.id) return;
+
+        const isOwnProfile = String(post.userId) === String(currentUser.id);
+
+        if (isOwnProfile) {
+            navigate(post.userRole === "Student" ? "/student/profile" : "/company/profile");
+            return;
+        }
+
+        const role = post.userRole?.toLowerCase();
+
+        if (role === "student") {
+            navigate(`${basePath}/aluno/${post.userId}`);
+            return;
+        }
+
+        if (role === "company") {
+            navigate(`${basePath}/empresa/${post.userId}`);
+            return;
+        }
+
+        // fallback seguro
+        navigate(`${basePath}/perfil/${post.userId}`);
     };
 
     useEffect(() => {
@@ -214,38 +245,41 @@ function Feed() {
     if (loading) return <p>Carregando feed...</p>;
 
     return (
- <div className="feed-container">
+        <div className="feed-container">
 
-    <div className="feed-header">
-        <span>STUDENT FEED</span>
-        <h1>Atividades da comunidade</h1>
-    </div>
+            <div className="feed-header">
+                <h1>Feed da Comunidade</h1>
+                <p>Veja conquistas, projetos, oportunidades e novidades da rede.</p>
+            </div>
+            
+            <div className="feed-search-bar">
+                <div className="search-input-wrapper">
+                    <Search size={16} className="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Buscar perfis..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onFocus={() => setShowSearch(true)}
+                    />
+                </div>
 
-    <div className="feed-search-bar">
-        <div className="search-input-wrapper">
-            <Search size={16} className="search-icon" />
-            <input
-                type="text"
-                placeholder="Buscar perfis..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onFocus={() => setShowSearch(true)}
-            />
-        </div>
 
-
-        {showSearch && searchTerm.length >= 2 && (
-            <div className="search-dropdown">
-                {searchLoading ? (
-                    <p className="search-loading">Buscando...</p>
-                ) : (
+                {showSearch && searchTerm.length >= 2 && (
+                    <div className="search-dropdown">
+                        {searchLoading ? (
+                            <p className="search-loading">Buscando...</p>
+                        ) : (
                             <>
                                 {searchResults?.students?.length > 0 &&
                                     searchResults.students.map((student) => (
                                         <div key={student.id} className="search-item">
                                             <div className="search-item-avatar">
                                                 {student.avatarUrl ? (
-                                                    <img src={student.avatarUrl} alt={student.name} />
+                                                    <img
+                                                        src={student.avatarUrl}
+                                                        alt={student.name}
+                                                    />
                                                 ) : (
                                                     <User size={14} />
                                                 )}
@@ -300,14 +334,25 @@ function Feed() {
                         <div className="feed-user">
                             <div className="user-info">
                                 {post.userAvatar ? (
-                                    <img src={post.userAvatar} alt="avatar" />
+                                    <img
+                                        src={post.userAvatar}
+                                        alt="avatar"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => goToProfile(post)}
+                                    />
+
                                 ) : (
                                     <div className="default-avatar">
                                         <User size={20} />
                                     </div>
                                 )}
                                 <div className="user-details">
-                                    <strong>{post.userName}</strong>
+                                    <strong
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => goToProfile(post)}
+                                    >
+                                        {post.userName}
+                                    </strong>
                                     <span className="activity-type">{post.activityType}</span>
                                     <span className="post-date">{formatRelativeDate(post.createdAt)}</span>
                                 </div>

@@ -165,5 +165,30 @@ namespace backend.Controllers
             return Ok(job);
         }
 
+        [HttpGet("by-user/{userId}")]
+        public async Task<IActionResult> GetCompanyByUserId(Guid userId)
+        {
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (company == null)
+                return NotFound(new { message = "Empresa não encontrada." });
+
+            return Ok(new
+            {
+                company.Id,
+                company.UserId,
+                company.Name,
+                company.Description,
+                company.Website,
+                company.ProfileImage,
+                company.Location,
+                company.LegalName,
+                company.Cnpj,
+                company.Sector,
+                company.Areas
+            });
+        }
+
     }
 }

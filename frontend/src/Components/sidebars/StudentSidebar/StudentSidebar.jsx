@@ -168,7 +168,6 @@ const StudentSidebar = () => {
           </div>
           <div className="student-sidebar__profile-info">
             <h4>{userInfo?.name || "Usuário"}</h4>
-            <span>{userInfo?.role ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1) : "Estudante"}</span>
           </div>
 
         </div>

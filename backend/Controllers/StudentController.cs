@@ -106,21 +106,16 @@ namespace backend.Controllers
             var student = await _context.StudentProfiles
                 .Include(s => s.User)
                 .ThenInclude(u => u.Skills)
-                .FirstOrDefaultAsync(s =>
-                    s.UserId.ToString() == id.ToString()
-                );
+                .FirstOrDefaultAsync(s => s.UserId == id);
 
             if (student == null)
-            {
-                return NotFound(new
-                {
-                    message = "Estudante não encontrado."
-                });
-            }
+                return NotFound(new { message = "Estudante não encontrado." });
 
             return Ok(new
             {
                 student.Id,
+                student.UserId,
+                Name = student.User.Name, // ← adicionado
                 student.Bio,
                 student.ProfileImage,
                 student.Course,
@@ -129,12 +124,8 @@ namespace backend.Controllers
                 student.University,
                 student.Location,
                 student.ResumoUrl,
-
-                Skills = student.User.Skills
-           .Select(s => s.Name)
-           .ToList()
-            }
-        );
+                Skills = student.User.Skills.Select(s => s.Name).ToList()
+            });
         }
 
         [HttpPut("{id}")]
@@ -188,5 +179,7 @@ namespace backend.Controllers
              .ToList()
             });
         }
+
+
     }
 }

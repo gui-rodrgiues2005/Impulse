@@ -22,13 +22,14 @@ import CompanyDashboard from "./Pages/company/Dashboard/Dashboard";
 import Vagas from "./Pages/company/Vagas/Vagas";
 import ConfigCompany from "./Pages/company/ConfigCompany/ConfigCompany";
 
-
-
 import VagasStudent from "./Pages/student/Vagas/VagasStudent";
 
 import Publicacoes from "./Components/Publicacoes/Publicacoes";
 import Feed from "./Components/Feed/Feed";
 
+//perfis publicos
+import PublicStudentProfile from "./Pages/student/PublicStudentProfile";
+import PublicCompanyProfile from "./Pages/company/PublicCompanyProfile";
 
 
 import ProtectedRoute from "./Routes/ProtectedRoute/ProtectedRoute";
@@ -114,6 +115,8 @@ function AppRoutes() {
                 element={<VagasStudent />}
               />
 
+              <Route path="aluno/:userId" element={<PublicStudentProfile />} />
+              <Route path="empresa/:userId" element={<PublicCompanyProfile />} />
             </Route>
 
             {/* ========================= */}
@@ -163,6 +166,8 @@ function AppRoutes() {
                 element={<ConfigCompany />}
               />
 
+              <Route path="aluno/:userId" element={<PublicStudentProfile />} />
+              <Route path="empresa/:userId" element={<PublicCompanyProfile />} />
             </Route>
 
             {/* ========================= */}

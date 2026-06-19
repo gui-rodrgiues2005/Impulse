@@ -32,8 +32,14 @@ namespace backend.Controllers
 
         [Authorize]
         [HttpPost("resume")]
-        public async Task<IActionResult> UploadResume(IFormFile file, [FromServices] CloudinaryService cloudinary)
+        public async Task<IActionResult> UploadResume(IFormFile file)
         {
+            if (file == null || file.Length == 0)
+                return BadRequest("Arquivo não enviado.");
+
+            if (file.ContentType != "application/pdf")
+                return BadRequest("Apenas arquivos PDF são permitidos.");
+
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             var student = await _context.StudentProfiles
@@ -41,45 +47,36 @@ namespace backend.Controllers
 
             if (student == null) return NotFound();
 
-            await using var stream = file.OpenReadStream();
+            // Converte o arquivo recebido da requisição para um array de bytes
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
 
-            var uploadParams = new CloudinaryDotNet.Actions.RawUploadParams
-            {
-                File = new CloudinaryDotNet.FileDescription(file.FileName, stream),
-                Folder = "impulse/resumes",
-                UseFilename = true,
-                UniqueFilename = true,
-            };
+            student.ResumoArquivo = memoryStream.ToArray();
+            student.ResumoContentType = file.ContentType;
 
-            var cloudinaryInstance = cloudinary.GetCloudinary();
-            var result = await cloudinaryInstance.UploadAsync(uploadParams);
+            // Opcional: define uma URL interna fictícia caso seu front antigo ainda precise ler a string
+            student.ResumoUrl = $"/api/students/{student.UserId}/resume";
 
-            // Troca /raw/upload/ por /image/upload/ pra o browser conseguir renderizar
-           var pdfUrl = result.SecureUrl.ToString();
-            student.ResumoUrl = pdfUrl;
             await _context.SaveChangesAsync();
 
-            return Ok(new { url = pdfUrl });
+            return Ok(new { message = "Currículo salvo com sucesso no banco de dados." });
         }
 
-        // GET currículo — só empresas acessam
-        [Authorize]
+        // GET currículo — Aberto para Empresas e para o próprio Estudante visualizar
+        [AllowAnonymous]
         [HttpGet("{studentId}/resume")]
         public async Task<IActionResult> GetResume(Guid studentId)
         {
-            // Verifica se quem pede é uma empresa
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "Company")
-                return Forbid();
-
             var student = await _context.StudentProfiles
                 .FirstOrDefaultAsync(s => s.UserId == studentId);
 
             if (student == null) return NotFound();
-            if (string.IsNullOrEmpty(student.ResumoUrl))
-                return NotFound(new { message = "Estudante não possui currículo." });
+            if (student.ResumoArquivo == null || student.ResumoArquivo.Length == 0)
+                return NotFound(new { message = "Estudante não possui currículo cadastrado." });
 
-            return Ok(new { url = student.ResumoUrl });
+            // Retorna o arquivo binário diretamente com o tipo correto ("application/pdf")
+            // Isso força o navegador a exibir o PDF no iframe ao invés de tentar baixá-lo
+            return File(student.ResumoArquivo, student.ResumoContentType ?? "application/pdf");
         }
     }
 }

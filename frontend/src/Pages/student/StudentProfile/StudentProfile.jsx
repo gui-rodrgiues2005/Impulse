@@ -15,6 +15,7 @@ import {
   X,
   Save,
   MoreVertical,
+  Eye
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -67,7 +68,8 @@ export default function StudentProfile() {
     skills: [],
   });
 
-
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false)
   // ── Trajetória ───────────────────────────────────────────
   const [trajectories, setTrajectories] = useState([]);
   const [loadingTrajectories, setLoadingTrajectories] = useState(true);
@@ -246,6 +248,41 @@ export default function StudentProfile() {
     }
   };
 
+  const handleVerCurriculo = async () => {
+    try {
+      // Substitua pela URL da sua API. Passando o ID do estudante correto.
+      const response = await fetch(`${API_URL}/Update/${studentProfile.userId}/resume`, {
+        method: "GET",
+        headers: {
+          // Se seu sistema usa autenticação por Token, passe ele aqui:
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
+
+      if (!response.ok) {
+        alert("Erro ao buscar o currículo do banco de dados.");
+        return;
+      }
+
+      // Transforma a resposta binária do C# em um objeto interpretável pelo navegador
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      setPdfBlobUrl(blobUrl);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Erro ao carregar PDF:", error);
+    }
+  };
+
+  // Se certifique de limpar a URL da memória quando o modal fechar para não dar memory leak
+  const handleFecharModal = () => {
+    setIsModalOpen(false);
+    if (pdfBlobUrl) {
+      URL.revokeObjectURL(pdfBlobUrl);
+      setPdfBlobUrl(null);
+    }
+  };
 
   const handleSaveSkills = async () => {
     try {
@@ -482,9 +519,6 @@ export default function StudentProfile() {
     return url.startsWith("http") ? url : `https://${url}`;
   };
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const resumeAsImageUrl = resumeUrl ? resumeUrl.replace(/\.pdf$/, ".jpg") : null;
-  const [isZoomed, setIsZoomed] = useState(false);
   return (
     <div className="student-profile">
       {/* HEADER */}
@@ -553,7 +587,7 @@ export default function StudentProfile() {
       {/* CARDS */}
 
       <div className="student-profile__cards">
-        <div className="student-profile__card student-profile__card--cv">
+        <div className="student-profile__card--cv">
           <div className="student-profile__cv">
             <div className="cv-icon">
               <FileText size={18} />
@@ -566,160 +600,51 @@ export default function StudentProfile() {
                   : "Envie seu CV em PDF para recrutadores visualizarem seu perfil."}
               </p>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {/* Texto informativo */}
-              <span style={{ fontSize: "14px", color: "#b3b3b3" }}>
-                {resumeUrl
-                  ? "Currículo enviado e visível para recrutadores."
-                  : "Envie seu CV em PDF para recrutadores visualizarem seu perfil."}
-              </span>
 
-              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                {/* MINIATURA PREVIEW (Substitui o antigo link "Ver currículo") */}
-                {resumeAsImageUrl && (
-                  <div
-                    onClick={() => setIsModalOpen(true)}
-                    style={{
-                      cursor: "pointer",
-                      border: "2px solid #333",
-                      borderRadius: "6px",
-                      overflow: "hidden",
-                      width: "60px",
-                      height: "85px",
-                      transition: "transform 0.2s",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
-                  >
-                    <img
-                      src={resumeAsImageUrl}
-                      alt="Preview do Currículo"
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  </div>
-                )}
+            {/* Botões de Ação alinhados com o seu layout */}
+            {studentProfile.resumoUrl && (
+              <button type="button" className="cv-view-btn" onClick={handleVerCurriculo}>
+                <Eye size={14} />
+                Ver
+              </button>
+            )}
 
-                {/* Seu botão de Upload / Atualizar original */}
-                <button onClick={() => document.getElementById("resume-input").click()}>
-                  <Plus size={14} />
-                  {resumeUrl ? "Atualizar" : "Upload"}
-                </button>
-              </div>
-
-              {/* MODAL QUE ABRE QUANDO CLICA NA MINIATURA */}
-              {isModalOpen && resumeAsImageUrl && (
-                <div
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setIsZoomed(false); // Reseta o zoom ao fechar
-                  }}
-                  style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
-                    backgroundColor: "rgba(0, 0, 0, 0.9)",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "16px",
-                    zIndex: 9999,
-                    overflow: "auto", // Permite scroll se a imagem ficar maior que a tela
-                    padding: "20px"
-                  }}
-                >
-                  {/* BARRA DE AÇÕES (FIXA NO TOPO PARA NÃO SUMIR NO ZOOM) */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      display: "flex",
-                      gap: "12px",
-                      position: "sticky",
-                      top: "10px",
-                      zIndex: 10000,
-                      backgroundColor: "rgba(0,0,0,0.5)",
-                      padding: "8px 16px",
-                      borderRadius: "30px",
-                      backdropFilter: "blur(5px)"
-                    }}
-                  >
-                    <button
-                      onClick={handleDownload}
-                      style={{
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        padding: "8px 16px",
-                        borderRadius: "20px",
-                        border: "none",
-                        fontWeight: "bold",
-                        fontSize: "13px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Baixar PDF
-                    </button>
-                    {/* BOTÃO FECHAR */}
-                    <button
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        setIsZoomed(false);
-                      }}
-                      style={{
-                        backgroundColor: "#333",
-                        color: "#fff",
-                        border: "1px solid #555",
-                        padding: "8px 16px",
-                        borderRadius: "20px",
-                        fontWeight: "bold",
-                        fontSize: "13px",
-                        cursor: "pointer"
-                      }}
-                    >
-                      Fechar
-                    </button>
-                  </div>
-
-                  {/* CONTAINER DA IMAGEM PARA CONTROLAR O SCROLL DO ZOOM */}
-                  <div
-                    onClick={(e) => e.stopPropagation()}
-                    style={{
-                      maxHeight: isZoomed ? "none" : "80vh",
-                      maxWidth: isZoomed ? "none" : "90vw",
-                      overflow: isZoomed ? "visible" : "hidden",
-                      transition: "all 0.25s ease-in-out",
-                      display: "flex",
-                      justifyContent: "center"
-                    }}
-                  >
-                    {/* Imagem do currículo */}
-                    <img
-                      src={resumeAsImageUrl}
-                      alt="Currículo Expandido"
-                      onClick={() => setIsZoomed(!isZoomed)} // Clicar na imagem também altera o zoom
-                      style={{
-                        width: isZoomed ? "1200px" : "auto", // Aumenta a largura consideravelmente no zoom
-                        maxHeight: isZoomed ? "none" : "80vh",
-                        maxWidth: isZoomed ? "none" : "90vw",
-                        borderRadius: "8px",
-                        boxShadow: "0px 4px 25px rgba(0,0,0,0.7)",
-                        cursor: isZoomed ? "zoom-out" : "zoom-in",
-                        transition: "transform 0.2s ease",
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-            <input
-              id="resume-input"
-              type="file"
-              accept=".pdf"
-              style={{ display: "none" }}
-              onChange={handleUploadResume}
-            />
+            <button type="button" onClick={() => document.getElementById("resume-input").click()}>
+              <Plus size={14} />
+              {studentProfile.resumoUrl ? "Atualizar" : "Upload"}
+            </button>
           </div>
+
+          <input
+            id="resume-input"
+            type="file"
+            accept=".pdf"
+            style={{ display: "none" }}
+            onChange={handleUploadResume}
+          />
+
+          {/* MODAL EXPANDIDO EM TELA CHEIA */}
+          {isModalOpen && pdfBlobUrl && (
+            <div className="cv-modal-overlay" onClick={handleFecharModal}>
+              <div className="cv-modal-container" onClick={(e) => e.stopPropagation()}>
+
+                {/* Header do Modal */}
+                <div className="cv-modal-header">
+                  <span>Visualizando Currículo</span>
+                  <button className="cv-modal-close-btn" onClick={handleFecharModal}>
+                    Fechar
+                  </button>
+                </div>
+
+                {/* Visualizador do PDF */}
+                <iframe
+                  src={`${pdfBlobUrl}#toolbar=1`}
+                  title="Visualizador de Currículo"
+                  className="cv-modal-iframe"
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

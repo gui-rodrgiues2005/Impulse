@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"
 import "./Vagas.scss";
 import API_URL from "../../../service/api";
 import { QuickChatButton } from "../../../Components/QuickChatButton";
@@ -8,7 +9,7 @@ import {
 } from "lucide-react";
 
 export default function Vagas() {
-
+  const navigate = useNavigate();
   // =========================================
   // ESTADOS
   // =========================================
@@ -58,18 +59,18 @@ export default function Vagas() {
   // =========================================
 
   // Busca todas as vagas da empresa no backend
-async function loadJobs() {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${API_URL}/jobs/my-jobs`, { // ← MUDA AQUI
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await response.json();
-    setVagas(data);
-  } catch (error) {
-    console.log(error);
+  async function loadJobs() {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/jobs/my-jobs`, { // ← MUDA AQUI
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      setVagas(data);
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 
   // Filtra as vagas de acordo com o termo de busca
   const vagasFiltradas = vagas.filter((vaga) => {
@@ -88,7 +89,7 @@ async function loadJobs() {
     try {
       const token = localStorage.getItem("token");
       const novoStatus = vaga.status === "Aberta" ? "Fechada" : "Aberta";
-      
+
       const response = await fetch(`${API_URL}/jobs/${vaga.id}`, {
         method: "PUT",
         headers: {
@@ -103,7 +104,7 @@ async function loadJobs() {
           status: novoStatus
         }),
       });
-      
+
       if (!response.ok) throw new Error("Erro ao atualizar status");
       loadJobs(); // Recarrega a lista
     } catch (error) {
@@ -220,6 +221,10 @@ async function loadJobs() {
     return "Especialidade não informada";
   };
 
+  const goToCandidateProfile = (candidate) => {
+    navigate(`/company/aluno/${candidate.student.id}`);
+  };
+
   // =========================================
   // RENDER
   // =========================================
@@ -241,9 +246,9 @@ async function loadJobs() {
       {/* BARRA DE BUSCA */}
       <div className="company-jobs__search">
         <Search size={20} className="company-jobs__search-icon" />
-        <input 
-          type="text" 
-          placeholder="Buscar vagas..." 
+        <input
+          type="text"
+          placeholder="Buscar vagas..."
           value={termoBusca}
           onChange={(e) => setTermoBusca(e.target.value)}
         />
@@ -287,7 +292,7 @@ async function loadJobs() {
                   </td>
 
                   <td>
-                    <button 
+                    <button
                       className={`status-badge status-badge--btn ${vaga.status.toLowerCase()}`}
                       onClick={() => handleToggleJobStatus(vaga)}
                       disabled={updatingJobId === vaga.id}
@@ -350,19 +355,22 @@ async function loadJobs() {
                       <li
                         key={c.id}
                         className="candidates-list__item"
-                        onClick={() => setSelectedCandidate(c)} // Seleciona o candidato para ver o perfil
+                        onClick={() => setSelectedCandidate(c)}
                       >
-                        {/* Foto do candidato ou inicial do nome */}
                         <div className="candidates-list__avatar">
-                          {c.student.profile?.profileImage || c.student.avatarUrl
-                            ? <img src={c.student.profile?.profileImage || c.student.avatarUrl} alt={c.student.name} />
-                            : <span>{c.student.name?.charAt(0).toUpperCase()}</span>
-                          }
+                          {c.student.profile?.profileImage || c.student.avatarUrl ? (
+                            <img
+                              src={c.student.profile?.profileImage || c.student.avatarUrl}
+                              alt={c.student.name}
+                            />
+                          ) : (
+                            <span>{c.student.name?.charAt(0).toUpperCase()}</span>
+                          )}
                         </div>
 
-                        {/* Nome e especialidade principal */}
                         <div className="candidates-list__info">
                           <h4>{c.student.name}</h4>
+
                           <span className="candidates-list__specialty">
                             {getSpecialty(c)}
                           </span>
@@ -454,6 +462,13 @@ async function loadJobs() {
                     avatarUrl={selectedCandidate.student.profile?.profileImage || selectedCandidate.student.avatarUrl}
                   />
                 </div>
+
+                <button
+                  className="candidate-profile__view-btn"
+                  onClick={() => goToCandidateProfile(selectedCandidate)}
+                >
+                  Ver perfil completo
+                </button>
 
                 {/* Data de candidatura */}
                 <div className="candidate-profile__applied">

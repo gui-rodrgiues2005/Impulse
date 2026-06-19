@@ -131,11 +131,6 @@ const CompanySidebar = () => {
           </div>
           <div className="company-sidebar__company-info">
             <h4>{userInfo?.name || "Empresa"}</h4>
-            <span>
-              {userInfo?.role
-                ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1)
-                : "Empresa"}
-            </span>
           </div>
         </div>
 

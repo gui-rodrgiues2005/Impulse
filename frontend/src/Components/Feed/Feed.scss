@@ -392,147 +392,131 @@
     }
 }
 
-/* ======================== BARRA DE BUSCA (MINIMALISTA) ======================== */
+/* ======================== BUSCA ======================== */
+
 .feed-search-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-}
-
-.search-message {
-    flex: 1;
-
-    color: #6b7280;
-    font-size: 15px;
-    font-weight: 500;
-
-    text-align: right;
-
-    max-width: 500px;
-    line-height: 1.5;
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 24px;
 }
 
 .search-input-wrapper {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 
-  width: 320px;
+    width: 100%;
+    height: 52px;
 
-  margin-left: 0;
-  margin-right: auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
 
-  background: #f3f4f6;
+    padding: 0 16px;
 
-  border-radius: 999px;
+    transition: all 0.2s ease;
 
-  padding: 12px 18px;
 
-  transition: all 0.2s ease;
-  position: relative;
 
-  &:focus-within {
-    background: #ececec;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
+    input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+
+        font-size: 14px;
+        font-weight: 500;
+        color: #111827;
+
+        &::placeholder {
+            color: #9ca3af;
+        }
+    }
 }
 
-  .search-icon {
-    color: #666;
-    margin-right: 8px;
+.search-icon {
+    color: #6b7280;
+    margin-right: 10px;
     flex-shrink: 0;
-  }
-
-  input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 14px;
-    color: #333;
-
-    &::placeholder {
-      color: #999;
-    }
-  }
-
+}
 
 .search-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  background: white;
-  border: 1px solid #e8e8e8;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  max-height: 360px;
-  overflow-y: auto;
-  margin-top: -1px;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+
+    width: 100%;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+    overflow: hidden;
+    z-index: 999;
+
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .search-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-bottom: 1px solid #f5f5f5;
-  transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 
-  &:hover {
-    background: #f9f9f9;
-  }
+    padding: 12px 16px;
 
-  &:last-child {
-    border-bottom: none;
-  }
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #f8fafc;
+    }
 }
 
 .search-item-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #e8e8e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  flex-shrink: 0;
-  overflow: hidden;
-  color: #999;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+    background: #f3f4f6;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }
 
 .search-item-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    min-width: 0;
 
-  .search-item-name {
-    margin: 0;
-    font-size: 13px;
-    font-weight: 500;
-    color: #333;
-  }
+    .search-item-name {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #111827;
+    }
 
-  .search-item-role {
-    font-size: 12px;
-    color: #999;
-  }
+    .search-item-role {
+        font-size: 12px;
+        color: #6b7280;
+    }
 }
 
 .search-loading,
 .search-empty {
-  padding: 16px 12px;
-  text-align: center;
-  font-size: 13px;
-  color: #999;
+    padding: 18px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
 }
 
 /* ======================== FIM BARRA ======================== */

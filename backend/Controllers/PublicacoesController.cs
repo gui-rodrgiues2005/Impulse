@@ -226,4 +226,47 @@ public class PublicacoesController : ControllerBase
 
         return Ok(new { message = "Publicação removida com sucesso." });
     }
+
+    [Authorize]
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<List<FeedPostResponseDto>>> GetUserPosts(Guid userId)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var parsedCurrentUserId = string.IsNullOrEmpty(currentUserId) ? Guid.Empty : Guid.Parse(currentUserId);
+
+        var posts = await _context.FeedPosts
+            .Include(x => x.User).ThenInclude(u => u.StudentProfile)
+            .Include(x => x.User).ThenInclude(u => u.CompanyProfile)
+            .Include(x => x.Skills)
+            .Include(x => x.Likes)
+            .Include(x => x.Comments)
+            .Where(x => x.UserId == userId && x.Visibility == "Publico") // só públicas
+            .OrderByDescending(x => x.CreatedAt)
+            .Select(x => new FeedPostResponseDto
+            {
+                Id = x.Id,
+                UserId = x.UserId,
+                UserName = x.User.Name,
+                UserAvatar = x.User.CompanyProfile != null
+                    ? x.User.CompanyProfile.ProfileImage
+                    : x.User.StudentProfile != null ? x.User.StudentProfile.ProfileImage : null,
+                UserRole = x.User.Role.ToString(),
+                Title = x.Title,
+                Description = x.Description,
+                ActivityType = x.ActivityType,
+                Level = x.Level,
+                Link = x.Link,
+                MediaUrl = x.MediaUrl,
+                Visibility = x.Visibility,
+                CommentPermission = x.CommentPermission,
+                CreatedAt = x.CreatedAt,
+                Skills = x.Skills.Select(skill => skill.Name).ToList(),
+                LikesCount = x.Likes.Count,
+                CommentsCount = x.Comments.Count,
+                Liked = x.Likes.Any(l => l.UserId == parsedCurrentUserId)
+            })
+            .ToListAsync();
+
+        return Ok(posts);
+    }
 }
