@@ -30,7 +30,7 @@ const StudentSidebar = () => {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("token");
-        
+
         if (!token) {
           return;
         }
@@ -56,6 +56,39 @@ const StudentSidebar = () => {
 
     fetchUserInfo();
   }, []);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // 1. Busca dados básicos do usuário
+        const userRes = await fetch(`${API_URL}/User/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userData = await userRes.json();
+        setUserInfo(userData);
+
+        // 2. Busca perfil do estudante pra pegar a foto
+        const profileRes = await fetch(`${API_URL}/Student/${userData.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const profileData = await profileRes.json();
+
+        setUserInfo((prev) => ({
+          ...prev,
+          profileImage: profileData.profileImage,
+        }));
+
+      } catch (err) {
+        console.error("Erro ao buscar usuário:", err);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
   return (
     <aside className="student-sidebar">
 
@@ -63,10 +96,10 @@ const StudentSidebar = () => {
 
         <div className="student-sidebar__logo">
           <div className="student-sidebar__logo-text">
-              <img src={Logo} alt="Impulse" className="student-sidebar__logo-image" />
+            <img src={Logo} alt="Impulse" className="student-sidebar__logo-image" />
           </div>
         </div>
-        
+
         <nav className="student-sidebar__nav">
 
           <NavLink
@@ -122,13 +155,17 @@ const StudentSidebar = () => {
       </div>
 
       <div className="student-sidebar__footer">
-
         <div className="student-sidebar__profile">
-
           <div className="student-sidebar__profile-avatar">
-            <User size={32} />
+            {userInfo?.profileImage ? (
+              <img
+                src={userInfo.profileImage}
+                alt={userInfo?.name || "Usuário"}
+              />
+            ) : (
+              userInfo?.name?.charAt(0)?.toUpperCase() || "U"
+            )}
           </div>
-
           <div className="student-sidebar__profile-info">
             <h4>{userInfo?.name || "Usuário"}</h4>
             <span>{userInfo?.role ? userInfo.role.charAt(0).toUpperCase() + userInfo.role.slice(1) : "Estudante"}</span>
@@ -136,16 +173,14 @@ const StudentSidebar = () => {
 
         </div>
 
-        <button 
+        <button
           className="student-sidebar__logout"
           onClick={handleLogout}
           title="Sair da conta"
         >
           <LogOut size={20} />
         </button>
-
       </div>
-
     </aside>
   );
 };

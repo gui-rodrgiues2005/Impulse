@@ -85,14 +85,6 @@ export const ChatScreen = () => {
             <p className="user-email">{otherParticipant?.email}</p>
           </div>
         </div>
-        <div className="chat-actions">
-          <button className="action-btn" title="Chamada de voz">
-            <Phone size={20} />
-          </button>
-          <button className="action-btn" title="Chamada de vídeo">
-            <Video size={20} />
-          </button>
-        </div>
       </div>
 
       <div className="messages-container">

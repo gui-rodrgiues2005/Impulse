@@ -46,6 +46,7 @@ namespace backend.Controllers
                 student.Github,
                 student.University,
                 student.Location,
+                student.ResumoUrl,
                 Skills = student.User.Skills.Select(s => s.Name).ToList()
             });
         }

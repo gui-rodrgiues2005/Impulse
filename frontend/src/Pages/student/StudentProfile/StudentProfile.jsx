@@ -85,7 +85,15 @@ export default function StudentProfile() {
   const menuRef = useRef(null);
   // ────────────────────────────────────────────────────────
   const [resumeUrl, setResumeUrl] = useState(null);
-
+  const [showEditPostModal, setShowEditPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [postMenuOpen, setPostMenuOpen] = useState(null);
+  const [editPostForm, setEditPostForm] = useState({
+    title: "", description: "", activityType: "",
+    level: "", link: "", visibility: "Publico",
+    commentPermission: "Todos", mediaUrl: "",
+    skillIds: [],
+  });
   useEffect(() => {
     profileUser();
     loadUserPosts();
@@ -119,7 +127,7 @@ export default function StudentProfile() {
       }
       const data = await response.json();
       setStudentProfile(data);
-      setResumeUrl(data.resumeUrl || null);
+      setResumeUrl(data.resumoUrl || null);
     } catch (error) {
       console.error("Erro ao carregar perfil:", error);
     }
@@ -183,6 +191,8 @@ export default function StudentProfile() {
     setSkillsInput((studentProfile.skills || []).join(", ")); // <- só essa linha
     setShowEditModal(true);
   };
+
+  console.log(studentProfile)
 
   const handleSaveProfile = async () => {
     try {
@@ -374,13 +384,107 @@ export default function StudentProfile() {
 
   const handleNavPublicar = () => navigate("/student/publicar");
 
+  const openEditPost = (post) => {
+    setEditingPost(post);
+    setEditPostForm({
+      title: post.title,
+      description: post.description,
+      activityType: post.activityType,
+      level: post.level,
+      link: post.link || "",
+      visibility: post.visibility,
+      commentPermission: post.commentPermission,
+      mediaUrl: post.mediaUrl || "",
+      skillIds: [],
+    });
+    setPostMenuOpen(null);
+    setShowEditPostModal(true);
+  };
+
+  const handleSavePost = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      let mediaUrl = editPostForm.mediaUrl;
+
+      // Faz upload da nova imagem se selecionada
+      if (editPostForm._imageFile) {
+        const formData = new FormData();
+        formData.append("file", editPostForm._imageFile);
+        const uploadRes = await fetch(`${API_URL}/Update/upload`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        if (!uploadRes.ok) throw new Error("Erro ao enviar imagem");
+        const uploadData = await uploadRes.json();
+        mediaUrl = uploadData.url;
+      }
+
+      const response = await fetch(`${API_URL}/publicacoes/${editingPost.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...editPostForm, mediaUrl, _imageFile: undefined }),
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      await loadUserPosts(); // ou loadPosts() no CompanyProfile
+      setShowEditPostModal(false);
+      setEditingPost(null);
+    } catch (err) {
+      console.error("Erro ao editar publicação:", err);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta publicação?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/publicacoes/${postId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error(await response.text());
+      await loadUserPosts();
+      setPostMenuOpen(null);
+    } catch (err) {
+      console.error("Erro ao excluir publicação:", err);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(resumeUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      // Define o nome do arquivo pegando a última parte da URL original
+      link.download = resumeUrl.split('/').pop() || 'curriculo.pdf';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Erro ao baixar o arquivo:", error);
+      // Caso falhe o fetch por CORS, abre o link original em última instância
+      window.open(resumeUrl, '_blank');
+    }
+  };
+
   const formatUrl = (url) => {
     if (!url) return "";
     return url.startsWith("http") ? url : `https://${url}`;
   };
 
-  console.log("Perfil do estudante:", studentProfile); // <- log para debug
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const resumeAsImageUrl = resumeUrl ? resumeUrl.replace(/\.pdf$/, ".jpg") : null;
+  const [isZoomed, setIsZoomed] = useState(false);
   return (
     <div className="student-profile">
       {/* HEADER */}
@@ -457,22 +561,156 @@ export default function StudentProfile() {
             <div className="cv-info">
               <h3>Currículo</h3>
               <p>
-                {resumeUrl
+                {studentProfile.resumoUrl
                   ? "Currículo enviado e visível para recrutadores."
                   : "Envie seu CV em PDF para recrutadores visualizarem seu perfil."}
               </p>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              {resumeUrl && (
-                <a href={resumeUrl} target="_blank" rel="noreferrer" className="cv-view-btn">
-                  <ExternalLink size={14} />
-                  Ver
-                </a>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {/* Texto informativo */}
+              <span style={{ fontSize: "14px", color: "#b3b3b3" }}>
+                {resumeUrl
+                  ? "Currículo enviado e visível para recrutadores."
+                  : "Envie seu CV em PDF para recrutadores visualizarem seu perfil."}
+              </span>
+
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                {/* MINIATURA PREVIEW (Substitui o antigo link "Ver currículo") */}
+                {resumeAsImageUrl && (
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    style={{
+                      cursor: "pointer",
+                      border: "2px solid #333",
+                      borderRadius: "6px",
+                      overflow: "hidden",
+                      width: "60px",
+                      height: "85px",
+                      transition: "transform 0.2s",
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+                  >
+                    <img
+                      src={resumeAsImageUrl}
+                      alt="Preview do Currículo"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </div>
+                )}
+
+                {/* Seu botão de Upload / Atualizar original */}
+                <button onClick={() => document.getElementById("resume-input").click()}>
+                  <Plus size={14} />
+                  {resumeUrl ? "Atualizar" : "Upload"}
+                </button>
+              </div>
+
+              {/* MODAL QUE ABRE QUANDO CLICA NA MINIATURA */}
+              {isModalOpen && resumeAsImageUrl && (
+                <div
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setIsZoomed(false); // Reseta o zoom ao fechar
+                  }}
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100vw",
+                    height: "100vh",
+                    backgroundColor: "rgba(0, 0, 0, 0.9)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "16px",
+                    zIndex: 9999,
+                    overflow: "auto", // Permite scroll se a imagem ficar maior que a tela
+                    padding: "20px"
+                  }}
+                >
+                  {/* BARRA DE AÇÕES (FIXA NO TOPO PARA NÃO SUMIR NO ZOOM) */}
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      position: "sticky",
+                      top: "10px",
+                      zIndex: 10000,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      padding: "8px 16px",
+                      borderRadius: "30px",
+                      backdropFilter: "blur(5px)"
+                    }}
+                  >
+                    <button
+                      onClick={handleDownload}
+                      style={{
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        border: "none",
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Baixar PDF
+                    </button>
+                    {/* BOTÃO FECHAR */}
+                    <button
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        setIsZoomed(false);
+                      }}
+                      style={{
+                        backgroundColor: "#333",
+                        color: "#fff",
+                        border: "1px solid #555",
+                        padding: "8px 16px",
+                        borderRadius: "20px",
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Fechar
+                    </button>
+                  </div>
+
+                  {/* CONTAINER DA IMAGEM PARA CONTROLAR O SCROLL DO ZOOM */}
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      maxHeight: isZoomed ? "none" : "80vh",
+                      maxWidth: isZoomed ? "none" : "90vw",
+                      overflow: isZoomed ? "visible" : "hidden",
+                      transition: "all 0.25s ease-in-out",
+                      display: "flex",
+                      justifyContent: "center"
+                    }}
+                  >
+                    {/* Imagem do currículo */}
+                    <img
+                      src={resumeAsImageUrl}
+                      alt="Currículo Expandido"
+                      onClick={() => setIsZoomed(!isZoomed)} // Clicar na imagem também altera o zoom
+                      style={{
+                        width: isZoomed ? "1200px" : "auto", // Aumenta a largura consideravelmente no zoom
+                        maxHeight: isZoomed ? "none" : "80vh",
+                        maxWidth: isZoomed ? "none" : "90vw",
+                        borderRadius: "8px",
+                        boxShadow: "0px 4px 25px rgba(0,0,0,0.7)",
+                        cursor: isZoomed ? "zoom-out" : "zoom-in",
+                        transition: "transform 0.2s ease",
+                      }}
+                    />
+                  </div>
+                </div>
               )}
-              <button onClick={() => document.getElementById("resume-input").click()}>
-                <Plus size={14} />
-                {resumeUrl ? "Atualizar" : "Upload"}
-              </button>
             </div>
             <input
               id="resume-input"
@@ -561,17 +799,205 @@ export default function StudentProfile() {
                     <img src={post.mediaUrl} alt={post.title} />
                   </div>
                 )}
+
                 <div className="post-content">
-                  <span className="post-type">{post.activityType}</span>
+                  <div className="post-content__top">
+                    <div className="post-content__badges">
+                      {post.activityType && (
+                        <span className="post-badge post-badge--type">{post.activityType}</span>
+                      )}
+                      {post.level && (
+                        <span className="post-badge post-badge--level">{post.level}</span>
+                      )}
+                      <span className={`post-badge post-badge--visibility post-badge--${post.visibility === "Publico" ? "public" : "private"}`}>
+                        {post.visibility === "Publico" ? "Público" : "Privado"}
+                      </span>
+                    </div>
+
+                    <div className="trajectory-menu">
+                      <button
+                        className="trajectory-menu__trigger"
+                        onClick={() => setPostMenuOpen(postMenuOpen === post.id ? null : post.id)}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                      {postMenuOpen === post.id && (
+                        <div className="trajectory-menu__dropdown">
+                          <button onClick={() => openEditPost(post)}>Editar</button>
+                          <button className="danger" onClick={() => handleDeletePost(post.id)}>Excluir</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <h3>{post.title}</h3>
-                  <p>{post.description}</p>
-                  <span className="post-level">{post.level}</span>
+                  <p className="post-description">{post.description}</p>
+
+                  <div className="post-content__footer">
+                    {post.link && (
+                      <a href={post.link} target="_blank" rel="noreferrer" className="post-link">
+                        <ExternalLink size={12} />Ver referência
+                      </a>
+                    )}
+                    <span className="post-comments-info">
+                      💬 {post.commentPermission === "Todos"
+                        ? "Todos podem comentar"
+                        : post.commentPermission === "ApenasEmpresas"
+                          ? "Apenas empresas"
+                          : "Comentários desativados"}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      {showEditPostModal && (
+        <div className="student-profile__modal-overlay">
+          <div className="student-profile__modal">
+            <div className="student-profile__modal-header">
+              <h2>Editar Publicação</h2>
+              <button onClick={() => setShowEditPostModal(false)}><X size={20} /></button>
+            </div>
+
+            <div className="student-profile__modal-body">
+              <div className="student-profile__form-group">
+                <label>Imagem da publicação</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    setEditPostForm({ ...editPostForm, _imageFile: file });
+                  }}
+                />
+                {(editPostForm._imageFile || editPostForm.mediaUrl) && (
+                  <img
+                    src={editPostForm._imageFile
+                      ? URL.createObjectURL(editPostForm._imageFile)
+                      : editPostForm.mediaUrl}
+                    alt="Preview"
+                    style={{
+                      width: "100%", height: "160px", objectFit: "cover",
+                      borderRadius: "10px", marginTop: "8px"
+                    }}
+                  />
+                )}
+              </div>
+              <div className="student-profile__form-group">
+                <label>Tipo de Atividade</label>
+                <select
+                  value={editPostForm.activityType}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, activityType: e.target.value })}
+                >
+                  <option value="">Selecione</option>
+                  {ACTIVITY_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Nível</label>
+                <select
+                  value={editPostForm.level}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, level: e.target.value })}
+                >
+                  <option value="">Selecione</option>
+                  <option value="Iniciante">Iniciante</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                </select>
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Título</label>
+                <input
+                  type="text"
+                  value={editPostForm.title}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, title: e.target.value })}
+                />
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Descrição</label>
+                <textarea
+                  rows={4}
+                  value={editPostForm.description}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, description: e.target.value })}
+                />
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Link de referência</label>
+                <input
+                  type="url"
+                  value={editPostForm.link}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, link: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Visibilidade</label>
+                <div className="post-edit__radio-group">
+                  {[
+                    { value: "Publico", label: "Público", desc: "Visível para toda a comunidade" },
+                    { value: "Privado", label: "Privado", desc: "Apenas você e recrutadores" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`post-edit__radio-card ${editPostForm.visibility === opt.value ? "selected" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="edit-visibility"
+                        value={opt.value}
+                        checked={editPostForm.visibility === opt.value}
+                        onChange={(e) => setEditPostForm({ ...editPostForm, visibility: e.target.value })}
+                      />
+                      <div><h4>{opt.label}</h4><p>{opt.desc}</p></div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="student-profile__form-group">
+                <label>Quem pode comentar?</label>
+                <div className="post-edit__radio-group">
+                  {[
+                    { value: "Todos", label: "Todos", desc: "Qualquer usuário" },
+                    { value: "ApenasEmpresas", label: "Apenas Empresas", desc: "Somente contas empresa" },
+                    { value: "Ninguem", label: "Ninguém", desc: "Comentários desativados" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`post-edit__radio-card ${editPostForm.commentPermission === opt.value ? "selected" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="edit-comment"
+                        value={opt.value}
+                        checked={editPostForm.commentPermission === opt.value}
+                        onChange={(e) => setEditPostForm({ ...editPostForm, commentPermission: e.target.value })}
+                      />
+                      <div><h4>{opt.label}</h4><p>{opt.desc}</p></div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div className="student-profile__modal-footer">
+              <button className="cancel" onClick={() => setShowEditPostModal(false)}>Cancelar</button>
+              <button className="save" onClick={handleSavePost}>
+                <Save size={18} />Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TRAJETÓRIA */}
       <div className="student-profile__section">

@@ -176,4 +176,54 @@ public class PublicacoesController : ControllerBase
             Liked = false
         });
     }
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdatePost(Guid id, [FromBody] CreateFeedPostDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userId, out var parsedUserId))
+            return BadRequest(new { message = "ID de usuário inválido" });
+
+        var post = await _context.FeedPosts
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == parsedUserId);
+
+        if (post == null)
+            return NotFound(new { message = "Publicação não encontrada ou sem permissão." });
+
+        post.Title = dto.Title;
+        post.Description = dto.Description;
+        post.ActivityType = dto.ActivityType;
+        post.Level = dto.Level;
+        post.Link = dto.Link ?? "";
+        post.MediaUrl = dto.MediaUrl;
+        post.Visibility = dto.Visibility ?? post.Visibility;
+        post.CommentPermission = dto.CommentPermission ?? post.CommentPermission;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Publicação atualizada com sucesso." });
+    }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePost(Guid id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(userId, out var parsedUserId))
+            return BadRequest(new { message = "ID de usuário inválido" });
+
+        var post = await _context.FeedPosts
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == parsedUserId);
+
+        if (post == null)
+            return NotFound(new { message = "Publicação não encontrada ou sem permissão." });
+
+        _context.FeedPosts.Remove(post);
+        await _context.SaveChangesAsync();
+
+        return Ok(new { message = "Publicação removida com sucesso." });
+    }
 }

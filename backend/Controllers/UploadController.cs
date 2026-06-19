@@ -29,12 +29,10 @@ namespace backend.Controllers
             var url = await cloudinary.UploadImageAsync(file);
             return Ok(new { url });
         }
-        // Upload do currículo (só o próprio estudante)
+
         [Authorize]
         [HttpPost("resume")]
-        public async Task<IActionResult> UploadResume(
-            IFormFile file,
-            [FromServices] CloudinaryService cloudinary)
+        public async Task<IActionResult> UploadResume(IFormFile file, [FromServices] CloudinaryService cloudinary)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -43,21 +41,25 @@ namespace backend.Controllers
 
             if (student == null) return NotFound();
 
-            // Reutiliza o mesmo Cloudinary mas salva como raw (PDF)
             await using var stream = file.OpenReadStream();
+
             var uploadParams = new CloudinaryDotNet.Actions.RawUploadParams
             {
                 File = new CloudinaryDotNet.FileDescription(file.FileName, stream),
-                Folder = "impulse/resumes"
+                Folder = "impulse/resumes",
+                UseFilename = true,
+                UniqueFilename = true,
             };
 
-            var cloudinaryInstance = cloudinary.GetCloudinary(); // veja passo 3
+            var cloudinaryInstance = cloudinary.GetCloudinary();
             var result = await cloudinaryInstance.UploadAsync(uploadParams);
 
-            student.ResumoUrl = result.SecureUrl.ToString();
+            // Troca /raw/upload/ por /image/upload/ pra o browser conseguir renderizar
+           var pdfUrl = result.SecureUrl.ToString();
+            student.ResumoUrl = pdfUrl;
             await _context.SaveChangesAsync();
 
-            return Ok(new { url = student.ResumoUrl });
+            return Ok(new { url = pdfUrl });
         }
 
         // GET currículo — só empresas acessam

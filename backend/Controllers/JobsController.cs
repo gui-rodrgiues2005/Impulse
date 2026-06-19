@@ -278,6 +278,14 @@ public async Task<IActionResult> GetMyJobs()
     }));
 }
  
+        // =========================================
+        // CANDIDATAR-SE A UMA VAGA
+        // Apenas alunos autenticados podem se candidatar
+        // Impede candidatura duplicada
+        // Incrementa o contador de candidatos na vaga
+        // Cria uma notificação para a empresa
+        // =========================================
+
         [Authorize]
         [HttpGet("{id}/candidates")]
         public async Task<IActionResult> GetCandidates(Guid id)
@@ -448,6 +456,108 @@ public async Task<IActionResult> GetMyJobs()
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Candidatura realizada com sucesso!" });
+        }
+
+        // ORIGEM DAS CANDIDATURAS
+        [HttpGet("{companyId}/applications/sources")]
+        public async Task<IActionResult> GetApplicationSources(Guid companyId)
+        {
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+
+            if (company == null)
+            {
+                return NotFound(new { message = "Empresa não encontrada." });
+            }
+
+            var sources = await (
+                from ja in _context.JobApplications
+                join j in _context.Jobs on ja.JobId equals j.Id
+                where j.CompanyId == companyId
+                select ja.Source
+            ).ToListAsync();
+
+            var sourceCounts = sources
+                .GroupBy(s => string.IsNullOrWhiteSpace(s) ? "Outros" : s)
+                .Select(g => new { Source = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .ToList();
+
+            return Ok(sourceCounts);
+        }
+
+        // CRESCIMENTO MENSAL DE CANDIDATURAS
+        [HttpGet("{companyId}/applications/monthly")]
+        public async Task<IActionResult> GetMonthlyApplications(Guid companyId)
+        {
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+
+            if (company == null)
+                return NotFound(new { message = "Empresa não encontrada." });
+
+            // Busca candidaturas dos últimos 7 meses
+            var cutoff = DateTime.UtcNow.AddMonths(-6);
+
+            var applications = await (
+                from ja in _context.JobApplications
+                join j in _context.Jobs on ja.JobId equals j.Id
+                where j.CompanyId == companyId && ja.AppliedAt >= cutoff
+                select ja.AppliedAt
+            ).ToListAsync();
+
+            // Agrupa por mês em memória
+            var monthlyData = applications
+                .GroupBy(date => new { date.Year, date.Month })
+                .OrderBy(g => g.Key.Year)
+                .ThenBy(g => g.Key.Month)
+            .Select(g => new
+            {
+                Mes = new DateTime(g.Key.Year, g.Key.Month, 1)
+              .ToString("MMM", new System.Globalization.CultureInfo("pt-BR")),
+                Candidatos = (int)g.Count()
+            })
+                .ToList();
+
+            return Ok(monthlyData);
+        }
+
+        // STATS DO DASHBOARD
+        [HttpGet("{companyId}/dashboard/stats")]
+        public async Task<IActionResult> GetDashboardStats(Guid companyId)
+        {
+            var company = await _context.Companies
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+
+            if (company == null)
+                return NotFound(new { message = "Empresa não encontrada." });
+
+            var agora = DateTime.UtcNow;
+            var semanaAtras = agora.AddDays(-7);
+
+            var jobs = await _context.Jobs
+                .Where(j => j.CompanyId == companyId)
+                .ToListAsync();
+
+            var vagasAbertas = jobs.Count(j => j.Status == "Aberta");
+            var novasVagasSemana = jobs.Count(j => j.CreatedAt >= semanaAtras);
+
+            var candidaturasSemana = await (
+                from ja in _context.JobApplications
+                join j in _context.Jobs on ja.JobId equals j.Id
+                where j.CompanyId == companyId && ja.AppliedAt >= semanaAtras
+                select ja.Id
+            ).CountAsync();
+
+            var totalCandidatos = jobs.Sum(j => j.Candidates);
+
+            return Ok(new
+            {
+                VagasAbertas = vagasAbertas,
+                NovasVagasSemana = novasVagasSemana,
+                TotalCandidatos = totalCandidatos,
+                CandidatosSemana = candidaturasSemana
+            });
         }
     }
 }

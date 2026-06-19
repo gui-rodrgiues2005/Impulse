@@ -214,6 +214,8 @@ const fetchVagas = async () => {
   if (loading) {
     return <div className="vagas-container"><p>Carregando vagas...</p></div>;
   }
+ 
+  console.log(vagasFiltradas)
 
   // =========================================
   // RENDER
@@ -282,7 +284,7 @@ const fetchVagas = async () => {
             <div className="vaga-header">
               <div className="vaga-logo">
                 <img
-                  src={vaga.company.logoUrl || 'https://via.placeholder.com/60'}
+                  src={vaga.company.profileImage}
                   alt={vaga.company.name}
                 />
               </div>

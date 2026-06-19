@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./CompanyProfile.scss";
 import API_URL from "../../../service/api";
 import {
@@ -15,9 +16,11 @@ import {
   FileText,
   Users,
   ChevronRight,
+  MoreVertical
 } from "lucide-react";
 
 const CompanyProfile = () => {
+  const navigate = useNavigate();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openModal, setOpenModal] = useState(false);
@@ -37,6 +40,15 @@ const CompanyProfile = () => {
     cnpj: "",
     sector: "",
     areas: "",
+  });
+
+  const [showEditPostModal, setShowEditPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [postMenuOpen, setPostMenuOpen] = useState(null);
+  const [editPostForm, setEditPostForm] = useState({
+    title: "", description: "", activityType: "",
+    level: "", link: "", visibility: "Publico",
+    commentPermission: "Todos", mediaUrl: "", skillIds: [],
   });
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -150,11 +162,71 @@ const CompanyProfile = () => {
     }
   };
 
+  const openEditPost = (post) => {
+    setEditingPost(post);
+    setEditPostForm({
+      title: post.title,
+      description: post.description,
+      activityType: post.activityType,
+      level: post.level || "",
+      link: post.link || "",
+      visibility: post.visibility,
+      commentPermission: post.commentPermission,
+      mediaUrl: post.mediaUrl || "",
+      skillIds: [],
+    });
+    setPostMenuOpen(null);
+    setShowEditPostModal(true);
+  };
+
+  const handleSavePost = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/publicacoes/${editingPost.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editPostForm),
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      await loadPosts();
+      setShowEditPostModal(false);
+      setEditingPost(null);
+    } catch (err) {
+      console.error("Erro ao editar publicação:", err);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta publicação?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/publicacoes/${postId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      // StudentProfile usa loadUserPosts(), CompanyProfile usa loadPosts()
+      await loadUserPosts(); // ou loadPosts() no CompanyProfile
+      setPostMenuOpen(null);
+    } catch (err) {
+      console.error("Erro ao excluir publicação:", err);
+    }
+  };
+
   if (loading) return <p className="company-profile__loading">Carregando...</p>;
 
   const areas = company?.areas
     ? company.areas.split(",").map((a) => a.trim()).filter(Boolean)
     : [];
+
+  const handleNavPublicar = () => navigate("/student/publicar");
 
   return (
     <div className="company-profile">
@@ -333,6 +405,7 @@ const CompanyProfile = () => {
       <div className="company-profile__section">
         <div className="company-profile__section-header">
           <h2>Publicações</h2>
+          <button onClick={handleNavPublicar}><Plus size={18} />Nova</button>
         </div>
         {loadingPosts ? (
           <p className="company-profile__empty-text">Carregando publicações...</p>
@@ -345,22 +418,192 @@ const CompanyProfile = () => {
           <div className="company-profile__posts-scroll">
             {posts.map((post) => (
               <div className="company-profile__post-card" key={post.id}>
+
                 {post.mediaUrl && (
                   <div className="post-image">
                     <img src={post.mediaUrl} alt={post.title} />
                   </div>
                 )}
+
                 <div className="post-content">
-                  <span className="post-type">{post.activityType}</span>
+                  <div className="post-content__top">
+                    <div className="post-content__badges">
+                      {post.activityType && (
+                        <span className="post-badge post-badge--type">{post.activityType}</span>
+                      )}
+                      {post.level && (
+                        <span className="post-badge post-badge--level">{post.level}</span>
+                      )}
+                      <span className={`post-badge post-badge--visibility post-badge--${post.visibility === "Publico" ? "public" : "private"}`}>
+                        {post.visibility === "Publico" ? "Público" : "Privado"}
+                      </span>
+                    </div>
+
+                    <div className="trajectory-menu">
+                      <button
+                        className="trajectory-menu__trigger"
+                        onClick={() => setPostMenuOpen(postMenuOpen === post.id ? null : post.id)}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
+                      {postMenuOpen === post.id && (
+                        <div className="trajectory-menu__dropdown">
+                          <button onClick={() => openEditPost(post)}>Editar</button>
+                          <button className="danger" onClick={() => handleDeletePost(post.id)}>Excluir</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <h3>{post.title}</h3>
-                  <p>{post.description}</p>
+                  <p className="post-description">{post.description}</p>
+
+                  <div className="post-content__footer">
+                    {post.link && (
+                      <a href={post.link} target="_blank" rel="noreferrer" className="post-link">
+                        <ExternalLink size={12} />
+                        Ver referência
+                      </a>
+                    )}
+                    <span className="post-comments-info">
+                      💬 {post.commentPermission === "Todos"
+                        ? "Todos podem comentar"
+                        : post.commentPermission === "ApenasEmpresas"
+                          ? "Apenas empresas"
+                          : "Comentários desativados"}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      {showEditPostModal && (
+        <div className="company-profile__modal-overlay">
+          <div className="company-profile__modal">
+            <div className="company-profile__modal-header">
+              <h2>Editar Publicação</h2>
+              <button onClick={() => setShowEditPostModal(false)}><X size={18} /></button>
+            </div>
 
+            <div className="company-profile__modal-body">
+
+              <div className="company-profile__form-group">
+                <label>Tipo de Atividade</label>
+                <select
+                  value={editPostForm.activityType}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, activityType: e.target.value })}
+                >
+                  <option value="">Selecione</option>
+                  {["Projeto Acadêmico", "Estágio", "Trabalho voluntário", "Pesquisa",
+                    "Certificação", "Oportunidade", "Dica Profissional"].map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                </select>
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Nível</label>
+                <select
+                  value={editPostForm.level}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, level: e.target.value })}
+                >
+                  <option value="">Selecione</option>
+                  <option value="Iniciante">Iniciante</option>
+                  <option value="Intermediário">Intermediário</option>
+                  <option value="Avançado">Avançado</option>
+                </select>
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Título</label>
+                <input
+                  type="text"
+                  value={editPostForm.title}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, title: e.target.value })}
+                />
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Descrição</label>
+                <textarea
+                  rows={4}
+                  value={editPostForm.description}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, description: e.target.value })}
+                />
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Link de referência</label>
+                <input
+                  type="url"
+                  value={editPostForm.link}
+                  onChange={(e) => setEditPostForm({ ...editPostForm, link: e.target.value })}
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Visibilidade</label>
+                <div className="post-edit__radio-group">
+                  {[
+                    { value: "Publico", label: "Público", desc: "Visível para toda a comunidade" },
+                    { value: "Privado", label: "Privado", desc: "Apenas você e recrutadores" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`post-edit__radio-card ${editPostForm.visibility === opt.value ? "selected" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="edit-visibility"
+                        value={opt.value}
+                        checked={editPostForm.visibility === opt.value}
+                        onChange={(e) => setEditPostForm({ ...editPostForm, visibility: e.target.value })}
+                      />
+                      <div><h4>{opt.label}</h4><p>{opt.desc}</p></div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="company-profile__form-group">
+                <label>Quem pode comentar?</label>
+                <div className="post-edit__radio-group">
+                  {[
+                    { value: "Todos", label: "Todos", desc: "Qualquer usuário" },
+                    { value: "ApenasEmpresas", label: "Apenas Empresas", desc: "Somente contas empresa" },
+                    { value: "Ninguem", label: "Ninguém", desc: "Comentários desativados" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`post-edit__radio-card ${editPostForm.commentPermission === opt.value ? "selected" : ""}`}
+                    >
+                      <input
+                        type="radio"
+                        name="edit-comment"
+                        value={opt.value}
+                        checked={editPostForm.commentPermission === opt.value}
+                        onChange={(e) => setEditPostForm({ ...editPostForm, commentPermission: e.target.value })}
+                      />
+                      <div><h4>{opt.label}</h4><p>{opt.desc}</p></div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div className="company-profile__modal-footer">
+              <button className="cancel" onClick={() => setShowEditPostModal(false)}>Cancelar</button>
+              <button className="save" onClick={handleSavePost}>
+                <Save size={16} />Salvar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* MODAL EDITAR */}
       {openModal && (
         <div className="company-profile__modal-overlay">

@@ -1,77 +1,49 @@
 import React, { useState, useCallback } from "react";
 import { ChatWidget } from "./ChatWidget";
-import { conversationAPI, messageAPI } from "../service/api.service";
+import { ChatProvider, useChat } from "../context/ChatContext";
 import "../styles/ChatWidgetManager.scss";
 
-export const ChatWidgetManager = ({ children }) => {
+export const ChatWidgetContext = React.createContext();
+
+// Inner separado pra poder usar useChat() dentro do ChatProvider
+const ChatWidgetManagerInner = ({ children }) => {
   const [openChats, setOpenChats] = useState({});
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { createOrGetConversation } = useChat(); // ← usa o contexto
 
-  const openChat = useCallback(
-    async (otherUserId, otherUserData) => {
-      if (openChats[otherUserId]) return; // Já aberto
+  const openChat = useCallback(async (otherUserId, otherUserData) => {
+    if (openChats[otherUserId]) return;
 
-      try {
-        // Criar ou obter conversa
-        const conversation = await conversationAPI.createOrGetConversation(
-          token,
-          otherUserId
-        );
+    try {
+      const conversation = await createOrGetConversation(otherUserId);
 
-        // Carregar histórico de mensagens
-        const messagesData = await messageAPI.getConversationMessages(
-          token,
-          conversation.id
-        );
-
-        setOpenChats((prev) => ({
-          ...prev,
-          [otherUserId]: {
-            conversationId: conversation.id,
-            otherParticipant: otherUserData,
-            messages: messagesData || [],
-          },
-        }));
-      } catch (error) {
-        console.error("Erro ao abrir chat:", error);
+      if (!conversation?.id) {
+        console.error("Conversa sem ID:", conversation);
+        return;
       }
-    },
-    [openChats, token]
-  );
+
+      setOpenChats((prev) => ({
+        ...prev,
+        [otherUserId]: {
+          conversationId: conversation.id,
+          otherParticipant: otherUserData,
+        },
+      }));
+    } catch (error) {
+      console.error("Erro ao abrir chat:", error);
+    }
+  }, [openChats, createOrGetConversation]);
 
   const closeChat = useCallback((otherUserId) => {
     setOpenChats((prev) => {
-      const newChats = { ...prev };
-      delete newChats[otherUserId];
-      return newChats;
+      const copy = { ...prev };
+      delete copy[otherUserId];
+      return copy;
     });
   }, []);
-
-  const addMessageToChat = useCallback((conversationId, message) => {
-    setOpenChats((prev) => {
-      const newChats = { ...prev };
-      Object.keys(newChats).forEach((userId) => {
-        if (newChats[userId].conversationId === conversationId) {
-          newChats[userId].messages.push(message);
-        }
-      });
-      return newChats;
-    });
-  }, []);
-
-  const value = {
-    openChat,
-    closeChat,
-    addMessageToChat,
-    openChats,
-  };
 
   return (
-    <ChatWidgetContext.Provider value={value}>
+    <ChatWidgetContext.Provider value={{ openChat, closeChat, openChats }}>
       {children}
-
-      {/* Renderizar widgets abertos */}
       <div className="chat-widgets-container">
         {Object.entries(openChats).map(([userId, chatData]) => (
           <ChatWidget
@@ -86,12 +58,15 @@ export const ChatWidgetManager = ({ children }) => {
   );
 };
 
-export const ChatWidgetContext = React.createContext();
+// Wrapper público que fornece o ChatProvider
+export const ChatWidgetManager = ({ children }) => (
+  <ChatProvider>
+    <ChatWidgetManagerInner>{children}</ChatWidgetManagerInner>
+  </ChatProvider>
+);
 
 export const useChatWidget = () => {
   const context = React.useContext(ChatWidgetContext);
-  if (!context) {
-    throw new Error("useChatWidget deve ser usado dentro de ChatWidgetManager");
-  }
+  if (!context) throw new Error("useChatWidget deve ser usado dentro de ChatWidgetManager");
   return context;
 };

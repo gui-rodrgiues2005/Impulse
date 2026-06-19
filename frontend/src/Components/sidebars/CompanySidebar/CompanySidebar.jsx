@@ -31,25 +31,32 @@ const CompanySidebar = () => {
     const fetchUserInfo = async () => {
       try {
         const token = localStorage.getItem("token");
-        
-        if (!token) {
-          return;
-        }
+        if (!token) return;
 
-        const response = await fetch(`${API_URL}/User/me`, {
-          method: "GET",
+        // 1. Dados básicos do usuário
+        const userRes = await fetch(`${API_URL}/User/me`, {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
+        if (!userRes.ok) throw new Error("Falha ao buscar dados do usuário");
+        const userData = await userRes.json();
+        setUserInfo(userData);
 
-        if (!response.ok) {
-          throw new Error("Falha ao buscar dados do usuário");
-        }
+        // 2. Foto da empresa via companyId
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user.companyId) return;
 
-        const data = await response.json();
-        setUserInfo(data);
+        const companyRes = await fetch(`${API_URL}/Company/${user.companyId}`);
+        if (!companyRes.ok) return;
+        const companyData = await companyRes.json();
+
+        setUserInfo((prev) => ({
+          ...prev,
+          profileImage: companyData.profileImage,
+        }));
+
       } catch (err) {
         console.error("Erro ao buscar usuário:", err);
       }
@@ -113,7 +120,14 @@ const CompanySidebar = () => {
 
         <div className="company-sidebar__company">
           <div className="company-sidebar__company-avatar">
-            <Building2 size={32} />
+            {userInfo?.profileImage ? (
+              <img
+                src={userInfo.profileImage}
+                alt={userInfo?.name || "Usuário"}
+              />
+            ) : (
+              userInfo?.name?.charAt(0)?.toUpperCase() || "U"
+            )}
           </div>
           <div className="company-sidebar__company-info">
             <h4>{userInfo?.name || "Empresa"}</h4>

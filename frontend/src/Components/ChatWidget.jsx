@@ -18,37 +18,15 @@ export const ChatWidget = ({
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const conversationMessages = messages[conversationId] || [];
 
-  // Conectar ao SignalR e carregar histórico quando widget abrir
+  // ✅ SUBSTITUA POR ESSE
   useEffect(() => {
-    const initializeChat = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+    if (!conversationId) return;
 
-        // Conectar SignalR se não estiver conectado
-        if (!chatService.connection) {
-          await chatService.connect(token);
-        }
-
-        // Entrar na conversa
-        await chatService.joinConversation(conversationId);
-
-        // Registrar listener para mensagens em tempo real
-        chatService.onReceiveMessage((message) => {
-          if (message.conversationId === conversationId) {
-            addMessage(conversationId, message);
-          }
-        });
-      } catch (error) {
-        console.error("Erro ao inicializar chat:", error);
+    chatService.onReceiveMessage((message) => {
+      if (message.conversationId === conversationId) {
+        addMessage(conversationId, message);
       }
-    };
-
-    initializeChat();
-
-    return () => {
-      // Não desconectar ao fechar individual, apenas ao sair completamente
-    };
+    });
   }, [conversationId, addMessage]);
 
   // Scroll automático
